@@ -20,6 +20,7 @@
 - [Concurrency](./decks/Concurrency.pptx)
 - [Change Feed](./decks/Change-Feed.pptx)
 - [Global Distribution](./decks/Global-Distribution.pptx)
+- [Security](./decks/Security.pptx)
 
 **References**
 - [Use-Case cheat sheet (1-pager)](./decks/1Pager-Use-Cases.pptx)
