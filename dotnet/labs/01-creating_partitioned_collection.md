@@ -310,7 +310,7 @@ To create a container, you must specify a name and a partition key path. You wil
 
     > This code will check to see if a container exists in your database that meets all of the specified parameters. If a container that matches does not exist, it will create a new container. Here is where we can specify the RU/s allocated for a newly created container. If this is not specified, the SDK has a default value for RU/s assigned to a container.
 
-1. Add the following code to print out the ID of the database:
+1. Add the following code to print out the ID of the container:
 
     ```csharp
     await Console.Out.WriteLineAsync($"Custom Container Id:\t{customContainer.Id}");
