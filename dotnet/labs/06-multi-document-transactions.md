@@ -12,7 +12,7 @@ You will get started in this lab by authoring simple stored procedures that impl
 
 ### Create Simple Stored Procedure
 
-1. In the **Azure Cosmos DB** blade, locate and select the **Data Explorer** link on the left side of the blade.
+1. In the **Azure Cosmos DB** blade in the Azure Portal, locate and select the **Data Explorer** link on the left side of the blade.
 
 1. In the **Data Explorer** section, expand the **NutritionDatabase** database node and then expand the **FoodCollection** container node.
 
@@ -22,9 +22,9 @@ You will get started in this lab by authoring simple stored procedures that impl
 
     ![The New Stored Procedure menu item is highlighted](../media/06-new_storedprocedure.jpg "Create a new Stored Procedure")
 
-2. In the stored procedure tab, locate the **Stored Procedure Id** field and enter the value: **greetCaller**.
+1. In the stored procedure tab, locate the **Stored Procedure Id** field and enter the value: **greetCaller**.
 
-3. Replace the contents of the stored procedure editor textarea with the following JavaScript code:
+1. Replace the contents of the stored procedure editor textarea with the following JavaScript code:
 
     ```js
     function greetCaller(name) {
@@ -36,7 +36,7 @@ You will get started in this lab by authoring simple stored procedures that impl
 
     ![A new stored procedure called greetCaller is displayed](../media/06-new_greet_caller_sp.jpg "Create a new stored procedure")
 
-    > This simple stored procedure will echo the input parameter string with the text ``Hello `` as a prefix.
+    > This simple stored procedure will echo the input parameter string with the text `Hello` as a prefix.
 
 1. Select the **Save** button at the top of the tab.
 
@@ -44,11 +44,11 @@ You will get started in this lab by authoring simple stored procedures that impl
 
 1. In the **Input parameters** popup that appears, perform the following actions:
 
-    - In the **Partition key value** section, use Type **String** and enter the value: ``example``.
+    - In the **Partition key value** section, use Type **String** and enter the value: `example`.
 
     - If there are no param fields listed, select the **Add New Param** button.
 
-    - In the param field, use Type **String** and enter the value: ``Person``.
+    - In the param field, use Type **String** and enter the value: `Person`.
 
     - Select the **Execute** button.
 
@@ -56,7 +56,7 @@ You will get started in this lab by authoring simple stored procedures that impl
 
 1. In the **Result** pane at the bottom of the tab, observe the results of the stored procedure's execution.
 
-    > The output should be ``"Hello Person"``.
+    > The output should be `"Hello Person"`.
 
 ### Create Stored Procedure with Nested Callbacks
 
@@ -108,7 +108,7 @@ All Azure Cosmos DB operations within a stored procedure are asynchronous and de
 
     ![The item created from the stored procedure is displayed](../media/06-execute_sp_02.jpg "review the item created")
 
-    > You should see a new item in your container. Azure Cosmos DB has assigned additional fields to the item such as ``id`` and ``_etag``.
+    > You should see a new item in your container. Azure Cosmos DB has assigned additional fields to the item such as `id` and `_etag`.
 
 1. Select the **New SQL Query** button at the top of the **Data Explorer** section.
 
@@ -157,11 +157,11 @@ All Azure Cosmos DB operations within a stored procedure are asynchronous and de
 
     > This stored procedure will use the **console.log** feature that's normally used in browser-based JavaScript to write output to the console. In the context of Azure Cosmos DB, this feature can be used to capture diagnostics logging information that can be returned after the stored procedure is executed.
 
-2. Select the **Save** button at the top of the tab.
+1. Select the **Save** button at the top of the tab.
 
-3. Select the **Execute** button at the top of the tab.
+1. Select the **Execute** button at the top of the tab.
 
-4. In the **Input parameters** popup that appears, perform the following actions:
+1. In the **Input parameters** popup that appears, perform the following actions:
 
     - In the **Partition key value** section, use Type **String** and enter the value: ``My Recipes``.
 
@@ -175,11 +175,11 @@ All Azure Cosmos DB operations within a stored procedure are asynchronous and de
 
     - Select the **Execute** button.
 
-5. In the **Result** pane at the bottom of the tab, observe the results of the stored procedure's execution.
+1. In the **Result** pane at the bottom of the tab, observe the results of the stored procedure's execution.
 
     > You should see the unique id of a new item in your container.
 
-6. Select the `console.log` link in the **Result** pane to view the log data for your stored procedure execution.
+1. Select the `console.log` link in the **Result** pane to view the log data for your stored procedure execution.
 
     > You can see that the procedural components of the stored procedure finished first and then the callback function was executed once the item was created. This can help you understand the asynchronous nature of JavaScript callbacks.
 
@@ -224,13 +224,13 @@ All Azure Cosmos DB operations within a stored procedure are asynchronous and de
 
     - Select the **Execute** button.
 
-2. In the **Result** pane at the bottom of the tab, observe that the stored procedure execution has failed.
+1. In the **Result** pane at the bottom of the tab, observe that the stored procedure execution has failed.
 
     > Stored procedures are bound to a specific partition key. In this example, we tried to execute the stored procedure within the context of the **Packaged Foods** partition key. Within the stored procedure, we tried to create a new item using the **My Recipes** partition key. The stored procedure was unable to create a new item (or access existing items) in a partition key other than the one specified when the stored procedure is executed. This caused the stored procedure to fail. You are not able to create or manipulate items across partition keys within a stored procedure.
 
-3. Select the **Execute** button at the top of the tab.
+1. Select the **Execute** button at the top of the tab.
 
-4. In the **Input parameters** popup that appears, perform the following actions:
+1. In the **Input parameters** popup that appears, perform the following actions:
 
     1. In the **Partition key value** section, use Type **String** and enter the value: ``Packaged Foods``.
 
@@ -244,13 +244,13 @@ All Azure Cosmos DB operations within a stored procedure are asynchronous and de
 
     4. Select the **Execute** button.
 
-5. In the **Result** pane at the bottom of the tab, observe the results of the stored procedure's execution.
+1. In the **Result** pane at the bottom of the tab, observe the results of the stored procedure's execution.
 
     > You should see a new item in your container. Azure Cosmos DB has assigned additional fields to the item such as ``id`` and ``_etag``.
 
-6. Select the **New SQL Query** button at the top of the **Data Explorer** section.
+1. Select the **New SQL Query** button at the top of the **Data Explorer** section.
 
-7. In the query tab, replace the contents of the query editor with the following SQL query:
+1. In the query tab, replace the contents of the query editor with the following SQL query:
 
     ```sql
     SELECT * FROM foods WHERE foods.foodGroup = "Packaged Foods"
@@ -258,11 +258,11 @@ All Azure Cosmos DB operations within a stored procedure are asynchronous and de
 
     > This query will retrieve the item you have just created.
 
-8. Select the **Execute Query** button in the query tab to run the query.
+1. Select the **Execute Query** button in the query tab to run the query.
 
-9. In the **Results** pane, observe the results of your query.
+1. In the **Results** pane, observe the results of your query.
 
-10. Close the **Query** tab.
+1. Close the **Query** tab.
 
 ### Create Stored Procedure with Error Handling
 
@@ -307,11 +307,11 @@ All Azure Cosmos DB operations within a stored procedure are asynchronous and de
 
     > This stored procedure uses nested callbacks to create two separate items. You may have scenarios where your data is split across multiple JSON documents and you will need to add or modify multiple items in a single stored procedure.
 
-2. Select the **Save** button at the top of the tab.
+1. Select the **Save** button at the top of the tab.
 
-3. Select the **Execute** button at the top of the tab.
+1. Select the **Execute** button at the top of the tab.
 
-4. In the **Input parameters** popup that appears, perform the following actions:
+1. In the **Input parameters** popup that appears, perform the following actions:
 
     - In the **Partition key value** section, use Type **String** and enter the value: `Vitamins`.
 
@@ -325,11 +325,11 @@ All Azure Cosmos DB operations within a stored procedure are asynchronous and de
 
     - Select the **Execute** button.
 
-5. In the **Result** pane at the bottom of the tab, observe the results of the stored procedure's execution.
+1. In the **Result** pane at the bottom of the tab, observe the results of the stored procedure's execution.
 
-    > You should see new items in your container. Azure Cosmos DB has assigned additional fields to the items such as ``id`` and ``_etag``.
+    > You should see new items in your container. Azure Cosmos DB has assigned additional fields to the items such as `id` and `_etag`.
 
-6. Replace the contents of the stored procedure editor with the following JavaScript code:
+1. Replace the contents of the stored procedure editor with the following JavaScript code:
 
     ```js
     function createTwoDocuments(foodGroupName, foodDescription, mealName) {
@@ -372,11 +372,11 @@ All Azure Cosmos DB operations within a stored procedure are asynchronous and de
 
 We are going to change the stored procedure to put in a different foodGroup name for the second item. This should cause the stored procedure to fail since the second item uses a different partition key. If there is any exception that’s propagated from the script, Cosmos DB’s JavaScript runtime will roll back the whole transaction. This will effectively ensure that the first or second items are not committed to the database.
 
-7. Select the **Update** button at the top of the tab.
+1. Select the **Update** button at the top of the tab.
 
-8. Select the **Execute** button at the top of the tab.
+1. Select the **Execute** button at the top of the tab.
 
-9. In the **Input parameters** popup that appears, perform the following actions:
+1. In the **Input parameters** popup that appears, perform the following actions:
 
     - In the **Partition key value** section, use Type **String** and enter the value: `Junk Food`.
 
@@ -390,13 +390,13 @@ We are going to change the stored procedure to put in a different foodGroup name
 
     - Select the **Execute** button.
 
-10. In the **Result** pane at the bottom of the tab, observe that the stored procedure execution has failed.
+1. In the **Result** pane at the bottom of the tab, observe that the stored procedure execution has failed.
 
     > This stored procedure failed to create the second item so the entire transaction was rolled back.
 
-11. Select the **New SQL Query** button at the top of the **Data Explorer** section.
+1. Select the **New SQL Query** button at the top of the **Data Explorer** section.
 
-12. In the query tab, replace the contents of the query editor with the following SQL query:
+1. In the query tab, replace the contents of the query editor with the following SQL query:
 
     ```sql
     SELECT * FROM foods WHERE foods.foodGroup = "Junk Food"
@@ -404,10 +404,10 @@ We are going to change the stored procedure to put in a different foodGroup name
 
     > This query won't retrieve any items since the transaction was rolled back.
 
-13. Select the **Execute Query** button in the query tab to run the query. You should see only an empty array.
+1. Select the **Execute Query** button in the query tab to run the query. You should see only an empty array.
 
-14. In the **Results** pane, observe the results of your query.
+1. In the **Results** pane, observe the results of your query.
 
-15. Close the **Query** tab.
+1. Close the **Query** tab.
 
 > If this is your final lab, follow the steps in [Removing Lab Assets](11-cleaning_up.md) to remove all lab resources.

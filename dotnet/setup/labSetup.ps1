@@ -14,7 +14,7 @@ if ($teardown) {
     Write-Output "Preparing to remove all resources in '$($resourceGroupName)'"
 
     try {
-        $accounts = Get-AzResource -ResourceType "Microsoft.DocumentDb/databaseAccounts" -ApiVersion "2018-06-01" -ResourceGroupName $resourceGroupName -ErrorAction Stop | Select -ExpandProperty Name
+        $accounts = Get-AzResource -ResourceType "Microsoft.DocumentDb/databaseAccounts" -ApiVersion "2020-04-01" -ResourceGroupName $resourceGroupName -ErrorAction Stop | Select -ExpandProperty Name
     }
     catch {
         Write-Output "Unable to locate resource group '$($resourceGroupName)' for removal. Please ensure that you are logged in to the correct Azure subscription."
