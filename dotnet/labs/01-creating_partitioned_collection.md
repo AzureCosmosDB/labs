@@ -33,7 +33,7 @@ You will start by using the .NET SDK to create containers to use in this and fol
     dotnet new console --output .
     ```
 
-    > This command will create a new .NET Core project. The project will be a **console** project and the project will be created in the current directly since you used the ``--output .`` option.
+    > This command will create a new .NET Core project. The project will be a **console** project and the project will be created in the current directly since you used the `--output .` option.
 
 1. Visual Studio Code will most likely prompt you to install various extensions related to **.NET Core** or **Azure Cosmos DB** development. None of these extensions are required to complete the labs.
 
@@ -51,7 +51,7 @@ You will start by using the .NET SDK to create containers to use in this and fol
     dotnet add package Bogus --version 30.0.2
     ```
 
-    > This command will add the [Bogus](../media/https://www.nuget.org/packages/Bogus/) NuGet package as a project dependency. This library will allow us to quickly generate test data using a fluent syntax and minimal code. We will use this library to generate test documents to upload to our Azure Cosmos DB instance. The lab instructions have been tested using the ``22.0.8`` version of this NuGet package.
+    > This command will add the [Bogus](https://www.nuget.org/packages/Bogus/) NuGet package as a project dependency. This library will allow us to quickly generate test data using a fluent syntax and minimal code. We will use this library to generate test documents to upload to our Azure Cosmos DB instance. The lab instructions have been tested using the `30.0.2` version of this NuGet package.
 
 1. In the terminal pane, enter and execute the following command:
 
@@ -77,7 +77,7 @@ You will start by using the .NET SDK to create containers to use in this and fol
 
 1. Select the **[folder name].csproj** file in the **Explorer** pane to open the file in the editor.
 
-1. We will now add a new **PropertyGroup** XML element to the project configuration within the **Project** element. To add a new **PropertyGroup**, insert the following lines of code under the line that reads ``<Project Sdk="Microsoft.NET.Sdk">``:
+1. We will now add a new **PropertyGroup** XML element to the project configuration within the **Project** element. To add a new **PropertyGroup**, insert the following lines of code under the line that reads `<Project Sdk="Microsoft.NET.Sdk">`:
 
     ```xml
     <PropertyGroup>
@@ -144,7 +144,7 @@ The CosmosClient class is the main "entry point" to using the SQL API in Azure C
 
 1. For the `_primaryKey` variable, replace the placeholder value with the **PRIMARY KEY** value from your Azure Cosmos DB account
 
-    > For example, if your **primary key** is ``elzirrKCnXlacvh1CRAnQdYVbVLspmYHQyYrhx0PltHi8wn5lHVHFnd1Xm3ad5cn4TUcH4U0MSeHsVykkFPHpQ==``, your new variable assignment will look like this: ``private static readonly string _primaryKey = "elzirrKCnXlacvh1CRAnQdYVbVLspmYHQyYrhx0PltHi8wn5lHVHFnd1Xm3ad5cn4TUcH4U0MSeHsVykkFPHpQ==";``.
+    > For example, if your **primary key** is `elzirrKCnXlacvh1CRAnQdYVbVLspmYHQyYrhx0PltHi8wn5lHVHFnd1Xm3ad5cn4TUcH4U0MSeHsVykkFPHpQ==`, your new variable assignment will look like this: `private static readonly string _primaryKey = "elzirrKCnXlacvh1CRAnQdYVbVLspmYHQyYrhx0PltHi8wn5lHVHFnd1Xm3ad5cn4TUcH4U0MSeHsVykkFPHpQ==";`.
 
     > Keep the **URI** and **PRIMARY KEY** values recorded, you will use them again later in this lab.
 
@@ -235,7 +235,7 @@ The CosmosClient class is the main "entry point" to using the SQL API in Azure C
 
 ### Create a Partitioned Container using the SDK
 
-To create a container, you must specify a name and a partition key path. A partition key is a logical hint for distributing data onto a scaled out underlying set of physical partitions and for efficiently routing queries to the appropriate underlying partition. To learn more, refer to [/docs.microsoft.com/azure/cosmos-db/partition-data](../media/https://docs.microsoft.com/en-us/azure/cosmos-db/partition-data).
+To create a container, you must specify a name and a partition key path. A partition key is a logical hint for distributing data onto a scaled out underlying set of physical partitions and for efficiently routing queries to the appropriate underlying partition. To learn more, refer to [/docs.microsoft.com/azure/cosmos-db/partition-data](https://docs.microsoft.com/en-us/azure/cosmos-db/partition-data).
 
 1. Beneath the **InitializeDatabase()** method, create the following new method:
 
@@ -353,7 +353,7 @@ To create a container, you must specify a name and a partition key path. A parti
 
 1. Switch to the **Program.cs** file in Visual Studio code
 
-1. Beneath the **InitializeContainer** method, create the following new method::
+1. Beneath the **InitializeContainer** method, create the following new method:
 
     ```csharp
     private static async Task LoadFoodAndBeverage(Container container)
@@ -467,7 +467,7 @@ To create a container, you must specify a name and a partition key path. A parti
 
 ### Populate Container with Data of Different Types
 
-1. Beneath the **LoadFoodAndBeverage** method, create the following new method::
+1. Beneath the **LoadFoodAndBeverage** method, create the following new method:
 
     ```csharp
     private static async Task LoadTelevision(Container container)

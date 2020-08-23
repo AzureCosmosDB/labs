@@ -9,7 +9,7 @@ In this lab, you will setup your Azure subscription with the required resources 
 
 ## Lab Content Setup
 
-1. To begin setup, Git clone or download the repo containing these instructions from [Github](https://github.com/CosmosDB/labs).
+1. To begin setup, Git clone or download the repo containing these instructions from [Github](https://github.com/AzureCosmosDB/labs).
 
 2. Open Windows Powershell
 3. Navigate to the folder containing your downloaded copy of the repo
