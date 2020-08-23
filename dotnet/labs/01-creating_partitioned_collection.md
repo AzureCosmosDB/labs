@@ -240,7 +240,7 @@ To create a container, you must specify a name and a partition key path. A parti
 1. Beneath the **InitializeDatabase()** method, create the following new method:
 
 ```csharp
-    private static async Task<Database> InitializeContainer(Database database, string containerId)
+    private static async Task<Container> InitializeContainer(Database database, string containerId)
     {
 
     }
@@ -251,26 +251,22 @@ To create a container, you must specify a name and a partition key path. A parti
     ```csharp
     IndexingPolicy indexingPolicy = new IndexingPolicy
     {
-        IndexingPolicy indexingPolicy = new IndexingPolicy
+        IndexingMode = IndexingMode.Consistent,
+        Automatic = true,
+        IncludedPaths =
         {
-            IndexingMode = IndexingMode.Consistent,
-            Automatic = true,
-            IncludedPaths =
+            new IncludedPath
             {
-                new IncludedPath
-                {
-                    Path = "/*"
-                }
-            },
-            ExcludedPaths =
-            {
-                new ExcludedPath
-                {
-                    Path = "/\"_etag\"/?"
-                }
+                Path = "/*"
             }
-        };
-
+        },
+        ExcludedPaths =
+        {
+            new ExcludedPath
+            {
+                Path = "/\"_etag\"/?"
+            }
+        }
     };
     ```
 
@@ -522,14 +518,6 @@ To create a container, you must specify a name and a partition key path. A parti
     ```
 
 1. Observe the output of the console application. You should see a list of item ids associated with new items that are being created.
-
-1. Locate the **Main** method and delete any existing code:
-
-    ```csharp
-    public static async Task Main(string[] args)
-    {
-    }
-    ```
 
 1. Beneath the **LoadTelevision** method create a new method **LoadMapViews**with the following implementation:
 
