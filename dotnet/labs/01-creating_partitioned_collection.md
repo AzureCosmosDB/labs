@@ -292,7 +292,7 @@ To create a container, you must specify a name and a partition key path. A parti
 
     > This code will check to see if a container exists in your database that meets all of the specified parameters. If a container that matches does not exist, it will create a new container. Here is where we can specify the RU/s allocated for a newly created container. If this is not specified, the SDK creates a container with a default value of 400 RU/s.
 
-1. Add the following code to print out the ID of the database and return the container :
+1. Add the following code to print out the ID of the container and return the container :
 
     ```csharp
     await Console.Out.WriteLineAsync($"Container Id:\t{container.Id}");
@@ -310,7 +310,7 @@ To create a container, you must specify a name and a partition key path. A parti
 
     ```
 
-1. Add the following code to the method to call the `InitializeContainer()` method to create a new ``Container`` instance if one does not already exist:
+1. Add the following code to the method to call the `InitializeContainer()` method to create a new `Container` instance if one does not already exist:
 
     ```csharp
     Container container = await InitializeContainer(database, "EntertainmentContainer");
