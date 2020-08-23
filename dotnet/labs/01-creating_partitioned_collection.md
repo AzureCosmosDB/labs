@@ -21,7 +21,7 @@ You will start by using the .NET SDK to create containers to use in this and fol
 
     ![Open with Code is highlighted](../media/02-open_with_code.jpg "Open the directory with Visual Studio Code")
 
-    > Alternatively, you can run a terminal in your current directory and execute the ``code .`` command.
+    > Alternatively, you can run a terminal in your current directory and execute the `code .` command.
 
 1. In the Visual Studio Code window that appears, right-click the **Explorer** pane and select the **Open in Terminal** menu option.
 
@@ -40,15 +40,15 @@ You will start by using the .NET SDK to create containers to use in this and fol
 1. In the terminal pane, enter and execute the following command:
 
     ```sh
-    dotnet add package Microsoft.Azure.Cosmos --version 3.7.0
+    dotnet add package Microsoft.Azure.Cosmos --version 3.12.0
     ```
 
-    > This command will add the [Microsoft.Azure.Cosmos](https://www.nuget.org/packages/Microsoft.Azure.Cosmos/) NuGet package as a project dependency. The lab instructions have been tested using the ``3.0.0`` version of this NuGet package.
+    > This command will add the [Microsoft.Azure.Cosmos](https://www.nuget.org/packages/Microsoft.Azure.Cosmos/) NuGet package as a project dependency. The lab instructions have been tested using the `3.12.0` version of this NuGet package.
 
 1. In the terminal pane, enter and execute the following command:
 
     ```sh
-    dotnet add package Bogus --version 22.0.8
+    dotnet add package Bogus --version 30.0.2
     ```
 
     > This command will add the [Bogus](../media/https://www.nuget.org/packages/Bogus/) NuGet package as a project dependency. This library will allow us to quickly generate test data using a fluent syntax and minimal code. We will use this library to generate test documents to upload to our Azure Cosmos DB instance. The lab instructions have been tested using the ``22.0.8`` version of this NuGet package.
@@ -94,11 +94,11 @@ You will start by using the .NET SDK to create containers to use in this and fol
         </PropertyGroup>
         <PropertyGroup>
             <OutputType>Exe</OutputType>
-            <TargetFramework>netcoreapp3.0</TargetFramework>
+            <TargetFramework>netcoreapp3.1</TargetFramework>
         </PropertyGroup>
         <ItemGroup>
-            <PackageReference Include="Bogus" Version="22.0.8" />
-            <PackageReference Include="Microsoft.Azure.Cosmos" Version="3.0.0" />
+            <PackageReference Include="Bogus" Version="30.0.2" />
+            <PackageReference Include="Microsoft.Azure.Cosmos" Version="3.12.0" />
         </ItemGroup>
     </Project>
     ```
@@ -114,9 +114,8 @@ The CosmosClient class is the main "entry point" to using the SQL API in Azure C
 1. Within the **Program.cs** editor tab, Add the following using blocks to the top of the editor:
 
     ```csharp
+    using System;
     using System.Collections.Generic;
-    using System.Collections.ObjectModel;
-    using System.Linq;
     using System.Threading.Tasks;
     using Microsoft.Azure.Cosmos;
     ```
@@ -139,11 +138,11 @@ The CosmosClient class is the main "entry point" to using the SQL API in Azure C
     private static readonly string _primaryKey = "";
     ```
 
-1. For the ``_endpointUri`` variable, replace the placeholder value with the **URI** value from your Azure Cosmos DB account
+1. For the `_endpointUri` variable, replace the placeholder value with the **URI** value from your Azure Cosmos DB account
 
-    > For example, if your **uri** is ``https://cosmosacct.documents.azure.com:443/``, your new variable assignment will look like this: ``private static readonly string _endpointUri = "https://cosmosacct.documents.azure.com:443/";``.
+    > For example, if your **uri** is `https://cosmosacct.documents.azure.com:443/`, your new variable assignment will look like this: `private static readonly string _endpointUri = "https://cosmosacct.documents.azure.com:443/";`.
 
-1. For the ``_primaryKey`` variable, replace the placeholder value with the **PRIMARY KEY** value from your Azure Cosmos DB account
+1. For the `_primaryKey` variable, replace the placeholder value with the **PRIMARY KEY** value from your Azure Cosmos DB account
 
     > For example, if your **primary key** is ``elzirrKCnXlacvh1CRAnQdYVbVLspmYHQyYrhx0PltHi8wn5lHVHFnd1Xm3ad5cn4TUcH4U0MSeHsVykkFPHpQ==``, your new variable assignment will look like this: ``private static readonly string _primaryKey = "elzirrKCnXlacvh1CRAnQdYVbVLspmYHQyYrhx0PltHi8wn5lHVHFnd1Xm3ad5cn4TUcH4U0MSeHsVykkFPHpQ==";``.
 
@@ -157,15 +156,13 @@ The CosmosClient class is the main "entry point" to using the SQL API in Azure C
     }
     ```
 
-1. Within the **Main** method, add the following lines of code to author a using block that creates and disposes a **CosmosClient** instance:
+1. Within the **Main** method, add the following lines of code to author a using statement that creates and disposes a **CosmosClient** instance:
 
     ```csharp
-    using (CosmosClient client = new CosmosClient(_endpointUri, _primaryKey))
-    {
-    }
+    using CosmosClient client = new CosmosClient(_endpointUri, _primaryKey);
     ```
 
-1. Your ``Program`` class definition should now look like this:
+1. Your `Program` class definition should now look like this:
 
     ```csharp
     public class Program
@@ -175,9 +172,7 @@ The CosmosClient class is the main "entry point" to using the SQL API in Azure C
 
         public static async Task Main(string[] args)
         {
-            using (CosmosClient client = new CosmosClient(_endpointUri, _primaryKey))
-            {
-            }
+            using CosmosClient client = new CosmosClient(_endpointUri, _primaryKey);
         }
     }
     ```
@@ -200,30 +195,31 @@ The CosmosClient class is the main "entry point" to using the SQL API in Azure C
 
 ### Create Database using the SDK
 
+1. Create a new method below the **Main()** method:
+
+```csharp
+    private static async Task<Database> InitializeDatabase(CosmosClient client, string databaseId)
+    {
+        DatabaseResponse databaseResponse = await client.CreateDatabaseIfNotExistsAsync(databaseId);
+        Database targetDatabase = databaseResponse.Database;
+        await Console.Out.WriteLineAsync($"Database Id:\t{targetDatabase.Id}");
+        return targetDatabase;
+    }
+```
+
+> This code will check to see if a database exists in your Azure Cosmos DB account with the passed in name. If a database that matches does not exist, it will create a new database and return it.
+
 1. Locate the using block within the **Main** method:
 
     ```csharp
-    using (CosmosClient client = new CosmosClient(_endpointUri, _primaryKey))
-    {
-    }
+    using CosmosClient client = new CosmosClient(_endpointUri, _primaryKey);
     ```
 
-1. Add the following code to the method to create a new ``Database`` instance if one does not already exist:
+1. Add the following code to the method to create a new `Database` instance if one does not already exist:
 
     ```csharp
-    DatabaseResponse databaseResponse = await client.CreateDatabaseIfNotExistsAsync("EntertainmentDatabase");
-    Database targetDatabase = databaseResponse.Database;
+    Database database = await InitializeDatabase(client, "EntertainmentDatabase");
     ```
-
-    > This code will check to see if a database exists in your Azure Cosmos DB account that meets the specified parameters. If a database that matches does not exist, it will create a new database.
-
-1. Add the following code to print out the ID of the database:
-
-    ```csharp
-    await Console.Out.WriteLineAsync($"Database Id:\t{targetDatabase.Id}");
-    ```
-
-    > The ``targetDatabase`` variable will have metadata about the database whether a new database is created or an existing one is read.
 
 1. Save all of your open editor tabs.
 
@@ -233,90 +229,109 @@ The CosmosClient class is the main "entry point" to using the SQL API in Azure C
     dotnet run
     ```
 
-    > This command will build and execute the console project.
-
-1. Observe the output of the running command.
-
-    > In the console window, you will see the ID string for the database resource in your Azure Cosmos DB account.
-
-1. In the open terminal pane, enter and execute the following command again:
-
-    ```sh
-    dotnet run
-    ```
-
-    > This command will build and execute the console project.
-
-1. Again, observe the output of the running command.
-
-    > Since the database already exists, the SDK detected that the database already exists and used the existing database instance instead of creating a new instance of the database.
+    > Observe the output of the running command. In the console window, you will see the ID string for the database resource in your Azure Cosmos DB account.
 
 1. Select the **🗙** symbol to close the terminal pane.
 
 ### Create a Partitioned Container using the SDK
 
-To create a container, you must specify a name and a partition key path. You will specify those values when creating a container in this task. A partition key is a logical hint for distributing data onto a scaled out underlying set of physical partitions and for efficiently routing queries to the appropriate underlying partition. To learn more, refer to [/docs.microsoft.com/azure/cosmos-db/partition-data](../media/https://docs.microsoft.com/en-us/azure/cosmos-db/partition-data).
+To create a container, you must specify a name and a partition key path. A partition key is a logical hint for distributing data onto a scaled out underlying set of physical partitions and for efficiently routing queries to the appropriate underlying partition. To learn more, refer to [/docs.microsoft.com/azure/cosmos-db/partition-data](../media/https://docs.microsoft.com/en-us/azure/cosmos-db/partition-data).
 
-1. Locate the using block within the **Main** method and delete any existing code:
+1. Beneath the **InitializeDatabase()** method, create the following new method:
 
-    ```csharp
-    using (CosmosClient client = new CosmosClient(_endpointUri, _primaryKey))
+```csharp
+    private static async Task<Database> InitializeContainer(Database database, string containerId)
     {
+
     }
-    ```
+```
 
-1. Add the following code to the method to create a reference to an existing database:
-
-    ```csharp
-    Database targetDatabase = client.GetDatabase("EntertainmentDatabase");
-    ```
-
-1. Add the following code to create a new ``IndexingPolicy`` instance with a custom indexing policy configured:
+1. Add the following code to create a new `IndexingPolicy` instance with a custom indexing policy configured:
 
     ```csharp
     IndexingPolicy indexingPolicy = new IndexingPolicy
     {
-        IndexingMode = IndexingMode.Consistent,
-        Automatic = true,
-        IncludedPaths =
+        IndexingPolicy indexingPolicy = new IndexingPolicy
         {
-            new IncludedPath
+            IndexingMode = IndexingMode.Consistent,
+            Automatic = true,
+            IncludedPaths =
             {
-                Path = "/*"
+                new IncludedPath
+                {
+                    Path = "/*"
+                }
+            },
+            ExcludedPaths =
+            {
+                new ExcludedPath
+                {
+                    Path = "/\"_etag\"/?"
+                }
             }
-        }
+        };
+
     };
     ```
 
-    > By default, all Azure Cosmos DB data is indexed. Although many customers are happy to let Azure Cosmos DB automatically handle all aspects of indexing, you can specify a custom indexing policy for containers. This indexing policy is very similar to the default indexing policy created by the SDK.
+    > By default, all Azure Cosmos DB data is indexed. Although many customers are happy to let Azure Cosmos DB automatically handle all aspects of indexing, you can specify a custom indexing policy for containers. This indexing policy is what is created by default. Excluding paths from being indexed can improve the performance for writes but only for high volume scenarios. However, if the path is used in queries this will result in expensive queries so it is best to weigh each option.
 
-1. Add the following code to create a new ``ContainerProperties`` instance with a single partition key of ``/type`` defined and including the previously created ``IndexingPolicy``:
+1. Beneath the indexing policy add the following code to create a new `ContainerProperties` instance with a partition key of `/type` and include the previously created `IndexingPolicy`:
 
     ```csharp
-    var containerProperties = new ContainerProperties("CustomCollection", "/type")
+    ContainerProperties containerProperties = new ContainerProperties(containerId, "/type")
     {
-        IndexingPolicy = indexingPolicy
+        IndexingPolicy = indexingPolicy,
     };
     ```
 
-    > This definition will create a partition key on the ``/type`` path. Partition key paths are case sensitive. This is especially important when you consider JSON property casing in the context of .NET CLR object to JSON object serialization.
+    > This definition will create a partition key on the `/type` path. Partition key paths are case sensitive. This is especially important when you consider JSON property casing in the context of .NET CLR object to JSON object serialization.
 
-1. Add the following lines of code to create a new ``Container`` instance if one does not already exist within your database. Specify the previously created settings and a value for **throughput**:
-
-    ```csharp
-    var containerResponse = await targetDatabase.CreateContainerIfNotExistsAsync(containerProperties, 10000);
-    var customContainer = containerResponse.Container;
-    ```
-
-    > This code will check to see if a container exists in your database that meets all of the specified parameters. If a container that matches does not exist, it will create a new container. Here is where we can specify the RU/s allocated for a newly created container. If this is not specified, the SDK has a default value for RU/s assigned to a container.
-
-1. Add the following code to print out the ID of the container:
+1. Add the following lines of code to create a new `Container` instance if one does not already exist within your database. Specify the previously created settings and a value for **throughput**:
 
     ```csharp
-    await Console.Out.WriteLineAsync($"Custom Container Id:\t{customContainer.Id}");
+    ContainerResponse containerResponse = await database.CreateContainerIfNotExistsAsync(containerProperties, 10000);
+    Container container = containerResponse.Container;
     ```
 
-    > The ``customContainer`` variable will have metadata about the container whether a new container is created or an existing one is read.
+    > This code will check to see if a container exists in your database that meets all of the specified parameters. If a container that matches does not exist, it will create a new container. Here is where we can specify the RU/s allocated for a newly created container. If this is not specified, the SDK creates a container with a default value of 400 RU/s.
+
+1. Add the following code to print out the ID of the database and return the container :
+
+    ```csharp
+    await Console.Out.WriteLineAsync($"Container Id:\t{container.Id}");
+    return container;
+    ```
+
+    > The `container` variable will have metadata about the container whether a new container is created or an existing one is read.
+
+1. Locate the `InitializeDatabase()` line within the **Main** method:
+
+    ```csharp
+    using CosmosClient client = new CosmosClient(_endpointUri, _primaryKey);
+
+    Database database = await InitializeDatabase(client, "EntertainmentDatabase");
+
+    ```
+
+1. Add the following code to the method to call the `InitializeContainer()` method to create a new ``Container`` instance if one does not already exist:
+
+    ```csharp
+    Container container = await InitializeContainer(database, "EntertainmentContainer");
+    ```
+
+1. Your **Main** method should now look like this :
+
+    ```csharp
+    public static async Task Main(string[] args)
+    {
+        using CosmosClient client = new CosmosClient(_endpointUri, _primaryKey);
+
+        Database database = await InitializeDatabase(client, "EntertainmentDatabase");
+
+        Container container = await InitializeContainer(database, "EntertainmentContainer");
+    }
+    ```
 
 1. Save all of your open editor tabs.
 
@@ -338,30 +353,21 @@ To create a container, you must specify a name and a partition key path. You wil
 
 ### Populate Container with Data
 
-1. In the Visual Studio Code window, look in the **Explorer** pane and verify that you have a **DataTypes.cs** file in your project folder. This file contains the data classes you will be working with in the following steps.
+1. In the Visual Studio Code window, look in the **Explorer** pane and verify that you have a **DataTypes.cs** file in your project folder. This file contains the data classes you will be working with in the following steps. If it is not in your project folder, you can copy it from this path in the cloned repo here `\labs\dotnet\setup\templates\Lab01\DataTypes.cs`
 
 1. Switch to the **Program.cs** file in Visual Studio code
 
-1. Locate the using block within the **Main** method and delete any existing code:
+1. Beneath the **InitializeContainer** method, create the following new method::
 
     ```csharp
-    using (CosmosClient client = new CosmosClient(_endpointUri, _primaryKey))
+    private static async Task LoadFoodAndBeverage(Container container)
     {
     }
     ```
 
-1. Add the following code to the method to create a reference to an existing container:
-
-    ```csharp
-    var targetDatabase = client.GetDatabase("EntertainmentDatabase");
-    var customContainer = targetDatabase.GetContainer("CustomCollection");
-    ```
-
-1. Observe the code in the **Main** method.
-
     > For the next few instructions, we will use the **Bogus** library to create test data. This library allows you to create a collection of objects with fake data set on each object's property. For this lab, our intent is to **focus on Azure Cosmos DB** instead of this library. With that intent in mind, the next set of instructions will expedite the process of creating test data.
 
-1. Add the following code to create a collection of ``PurchaseFoodOrBeverage`` instances:
+1. Add the following code in the method above to create a collection of `PurchaseFoodOrBeverage` instances:
 
     ```csharp
     var foodInteractions = new Bogus.Faker<PurchaseFoodOrBeverage>()
@@ -375,7 +381,7 @@ To create a container, you must specify a name and a partition key path. You wil
 
     > As a reminder, the Bogus library generates a set of test data. In this example, you are creating 500 items using the Bogus library and the rules listed above. The **GenerateLazy** method tells the Bogus library to prepare for a request of 500 items by returning a variable of type **IEnumerable**. Since LINQ uses deferred execution by default, the items aren't actually created until the collection is iterated.
 
-1. Add the following foreach block to iterate over the ``PurchaseFoodOrBeverage`` instances:
+1. Next add the following foreach block to iterate over the `PurchaseFoodOrBeverage` instances:
 
     ```csharp
     foreach(var interaction in foodInteractions)
@@ -383,48 +389,73 @@ To create a container, you must specify a name and a partition key path. You wil
     }
     ```
 
-1. Within the ``foreach`` block, add the following line of code to asynchronously create a container item and save the result of the creation task to a variable:
+1. Within the `foreach` block, add the following line of code to asynchronously create a container item and save the result of the creation task to a variable:
 
     ```csharp
-    ItemResponse<PurchaseFoodOrBeverage> result = await customContainer.CreateItemAsync(interaction);
+    ItemResponse<PurchaseFoodOrBeverage> result = await container.CreateItemAsync(interaction, new PartitionKey(interaction.type));
     ```
 
-    > The ``CreateItemAsync`` method of the ``CosmosItems`` class takes in an object that you would like to serialize into JSON and store as a document within the specified container. The ``id`` property, which here we've assigned to a unique Guid on each object, is a special required value in Cosmos DB that is used for indexing and must be unique for every item in a container.
+    > The `CreateItemAsync` method takes in an object that you would like to serialize into JSON and store as a document within the specified container. You can also specify the logical partition for this data as well. In this case it is the name of the PurchaseFoodOrBeverage class. The `id` property, which is generated as a unique Guid for each new object, is a special required value in Cosmos DB that is used for indexing and must be unique for every item in a logical partition.
 
-1. Still within the ``foreach`` block, add the following line of code to write the value of the newly created resource's ``id`` property to the console:
+1. Still within the `foreach` block, add the following line of code to write the value of the newly created resource's `id` property to the console:
 
     ```csharp
     await Console.Out.WriteLineAsync($"Item Created\t{result.Resource.id}");
     ```
 
-    > The ``CosmosItemResponse`` type has a property named ``Resource`` that contains the object representing the item as well as other properties to give you access to interesting data about an item such as its ETag.
+    > The `CosmosItemResponse` type has a property named `Resource` that contains the object representing the item as well as other properties to give you access to interesting data about an item such as its ETag.
 
-1. Your **Main** method should look like this:
+1. Your **LoadFoodAndBeverage** method should look like this:
 
     ```csharp
-    public static async Task Main(string[] args)
+    private static async Task LoadFoodAndBeverage(Container container)
     {
-        using (CosmosClient client = new CosmosClient(_endpointUri, _primaryKey))
+        var foodInteractions = new Bogus.Faker<PurchaseFoodOrBeverage>()
+            .RuleFor(i => i.id, (fake) => Guid.NewGuid().ToString())
+            .RuleFor(i => i.type, (fake) => nameof(PurchaseFoodOrBeverage))
+            .RuleFor(i => i.unitPrice, (fake) => Math.Round(fake.Random.Decimal(1.99m, 15.99m), 2))
+            .RuleFor(i => i.quantity, (fake) => fake.Random.Number(1, 5))
+            .RuleFor(i => i.totalPrice, (fake, user) => Math.Round(user.unitPrice * user.quantity, 2))
+            .GenerateLazy(500);
+
+        foreach (var interaction in foodInteractions)
         {
-            var targetDatabase = client.GetDatabase("EntertainmentDatabase");
-            var customContainer = targetDatabase.GetContainer("CustomCollection");
-            var foodInteractions = new Bogus.Faker<PurchaseFoodOrBeverage>()
-                .RuleFor(i => i.id, (fake) => Guid.NewGuid().ToString())
-                .RuleFor(i => i.type, (fake) => nameof(PurchaseFoodOrBeverage))
-                .RuleFor(i => i.unitPrice, (fake) => Math.Round(fake.Random.Decimal(1.99m, 15.99m), 2))
-                .RuleFor(i => i.quantity, (fake) => fake.Random.Number(1, 5))
-                .RuleFor(i => i.totalPrice, (fake, user) => Math.Round(user.unitPrice * user.quantity, 2))
-                .GenerateLazy(500);
-            foreach(var interaction in foodInteractions)
-            {
-                ItemResponse<PurchaseFoodOrBeverage> result = await customContainer.CreateItemAsync(interaction);
-                await Console.Out.WriteLineAsync($"Document [PurchaseFoodOrBeverage] Created\t{result.Resource.id}");
-            }
+            ItemResponse<PurchaseFoodOrBeverage> result = await container.CreateItemAsync(interaction, new PartitionKey(interaction.type));
+            await Console.Out.WriteLineAsync($"Item Created\t{result.Resource.id}");
         }
     }
     ```
 
     > As a reminder, the Bogus library generates a set of test data. In this example, you are creating 500 items using the Bogus library and the rules listed above. The **GenerateLazy** method tells the Bogus library to prepare for a request of 500 items by returning a variable of type **IEnumerable**. Since LINQ uses deferred execution by default, the items aren't actually created until the collection is iterated. The **foreach** loop at the end of this code block iterates over the collection and creates items in Azure Cosmos DB.
+
+1. Locate the **InitalizeContainer** method within the **Main** method:
+
+    ```csharp
+    using CosmosClient client = new CosmosClient(_endpointUri, _primaryKey);
+    Database database = await InitializeDatabase(client, "EntertainmentDatabase");
+    Container container = await InitializeContainer(database, "EntertainmentContainer");
+    ```
+
+1. Add the following code to the method to call the **LoadFoodAndBeverage** method:
+
+    ```csharp
+    await LoadFoodAndBeverage(container);
+    ```
+
+1. Your **Main** method should now look like this :
+
+    ```csharp
+    public static async Task Main(string[] args)
+    {
+        using CosmosClient client = new CosmosClient(_endpointUri, _primaryKey);
+
+        Database database = await InitializeDatabase(client, "EntertainmentDatabase");
+
+        Container container = await InitializeContainer(database, "EntertainmentContainer");
+
+        await LoadFoodAndBeverage(container);
+    }
+    ```
 
 1. Save all of your open editor tabs.
 
@@ -440,40 +471,47 @@ To create a container, you must specify a name and a partition key path. You wil
 
 ### Populate Container with Data of Different Types
 
-1. Locate the **Main** method and delete any existing code:
+1. Beneath the **LoadFoodAndBeverage** method, create the following new method::
 
     ```csharp
-    public static async Task Main(string[] args)
+    private static async Task LoadTelevision(Container container)
     {
     }
     ```
 
-1. Replace the **Main** method with the following implementation:
+1. Add the following code in the method above to create a collection of `WatchLiveTelevisionChannel` instances:
 
     ```csharp
-    public static async Task Main(string[] args)
-    {  
-        using (CosmosClient client = new CosmosClient(_endpointUri, _primaryKey))
-        {
-            var targetDatabase = client.GetDatabase("EntertainmentDatabase");
-            var customContainer = targetDatabase.GetContainer("CustomCollection");
-            var tvInteractions = new Bogus.Faker<WatchLiveTelevisionChannel>()
-                .RuleFor(i => i.id, (fake) => Guid.NewGuid().ToString())
-                .RuleFor(i => i.type, (fake) => nameof(WatchLiveTelevisionChannel))
-                .RuleFor(i => i.minutesViewed, (fake) => fake.Random.Number(1, 45))
-                .RuleFor(i => i.channelName, (fake) => fake.PickRandom(new List<string> { "NEWS-6", "DRAMA-15", "ACTION-12", "DOCUMENTARY-4", "SPORTS-8" }))
-                .GenerateLazy(500);
+    var tvInteractions = new Bogus.Faker<WatchLiveTelevisionChannel>()
+            .RuleFor(i => i.id, (fake) => Guid.NewGuid().ToString())
+            .RuleFor(i => i.type, (fake) => nameof(WatchLiveTelevisionChannel))
+            .RuleFor(i => i.minutesViewed, (fake) => fake.Random.Number(1, 45))
+            .RuleFor(i => i.channelName, (fake) => fake.PickRandom(new List<string> { "NEWS-6", "DRAMA-15", "ACTION-12", "DOCUMENTARY-4", "SPORTS-8" }))
+            .GenerateLazy(500);
 
-            foreach(var interaction in tvInteractions)
-            {
-                ItemResponse<WatchLiveTelevisionChannel> result = await customContainer.CreateItemAsync(interaction);
-                await Console.Out.WriteLineAsync($"Document [WatchLiveTelevisionChannel] Created\t{result.Resource.id}");
-            }
-        }
+    foreach (var interaction in tvInteractions)
+    {
+        ItemResponse<WatchLiveTelevisionChannel> result = await container.CreateItemAsync(interaction, new PartitionKey(interaction.type));
+        await Console.Out.WriteLineAsync($"Item Created\t{result.Resource.id}");
     }
     ```
 
-    > As a reminder, the Bogus library generates a set of test data. In this example, you are creating 500 items using the Bogus library and the rules listed above. The **GenerateLazy** method tells the Bogus library to prepare for a request of 500 items by returning a variable of type **IEnumerable**. Since LINQ uses deferred execution by default, the items aren't actually created until the collection is iterated. The **foreach** loop at the end of this code block iterates over the collection and creates items in Azure Cosmos DB.
+1. Go to your **Main** method and add a new line to call **LoadTelevision** and comment out **LoadFoodAndBeverage**. The method should now look like this :
+
+    ```csharp
+    public static async Task Main(string[] args)
+    {
+        using CosmosClient client = new CosmosClient(_endpointUri, _primaryKey);
+
+        Database database = await InitializeDatabase(client, "EntertainmentDatabase");
+
+        Container container = await InitializeContainer(database, "EntertainmentContainer");
+
+        //await LoadFoodAndBeverage(container);
+
+        await LoadTelevision(container);
+    }
+    ```
 
 1. Save all of your open editor tabs.
 
@@ -493,27 +531,41 @@ To create a container, you must specify a name and a partition key path. You wil
     }
     ```
 
-1. Replace the **Main** method with the following implementation:
+1. Beneath the **LoadTelevision** method create a new method **LoadMapViews**with the following implementation:
+
+    ```csharp
+    private static async Task LoadMapViews(Container container)
+    {
+        var mapInteractions = new Bogus.Faker<ViewMap>()
+            .RuleFor(i => i.id, (fake) => Guid.NewGuid().ToString())
+            .RuleFor(i => i.type, (fake) => nameof(ViewMap))
+            .RuleFor(i => i.minutesViewed, (fake) => fake.Random.Number(1, 45))
+            .GenerateLazy(500);
+
+        foreach (var interaction in mapInteractions)
+        {
+            ItemResponse<ViewMap> result = await container.CreateItemAsync(interaction);
+            await Console.Out.WriteLineAsync($"Item Created\t{result.Resource.id}");
+        }
+    }
+    ```
+
+1. Go to your **Main** method and add a new line to call **LoadMapViews** and comment out **LoadTelevision**. The method should now look like this :
 
     ```csharp
     public static async Task Main(string[] args)
-    {  
-        using (CosmosClient client = new CosmosClient(_endpointUri, _primaryKey))
-        {
-            var targetDatabase = client.GetDatabase("EntertainmentDatabase");
-            var customContainer = targetDatabase.GetContainer("CustomCollection");
-            var mapInteractions = new Bogus.Faker<ViewMap>()
-                .RuleFor(i => i.id, (fake) => Guid.NewGuid().ToString())
-                .RuleFor(i => i.type, (fake) => nameof(ViewMap))
-                .RuleFor(i => i.minutesViewed, (fake) => fake.Random.Number(1, 45))
-                .GenerateLazy(500);
+    {
+        using CosmosClient client = new CosmosClient(_endpointUri, _primaryKey);
 
-            foreach(var interaction in mapInteractions)
-            {
-                ItemResponse<ViewMap> result = await customContainer.CreateItemAsync(interaction);
-                await Console.Out.WriteLineAsync($"Document [ViewMap] Created\t{result.Resource.id}");
-            }
-        }
+        Database database = await InitializeDatabase(client, "EntertainmentDatabase");
+
+        Container container = await InitializeContainer(database, "EntertainmentContainer");
+
+        //await LoadFoodAndBeverage(container);
+
+        //await LoadTelevision(container);
+
+        await LoadMapViews(container);
     }
     ```
 

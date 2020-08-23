@@ -68,7 +68,7 @@ In this lab, you will setup your Azure subscription with the required resources 
 
 ## Log-in to the Azure Portal
 
-1. In a new window, sign in to the **Azure Portal** (<http://portal.azure.com>).
+1. In a new window, sign in to the **Azure Portal** (<https://portal.azure.com>).
 
 1. Once you have logged in, you may be prompted to start a tour of the Azure portal. You can safely skip this step.
 
