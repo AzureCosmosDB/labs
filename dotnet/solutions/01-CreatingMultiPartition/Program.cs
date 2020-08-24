@@ -7,12 +7,14 @@ public class Program
 {
     private static readonly string _endpointUri = "";
     private static readonly string _primaryKey = "";
+    private static CosmosClient _client;
 
     public static async Task Main(string[] args)
     {
-        using CosmosClient client = new CosmosClient(_endpointUri, _primaryKey);
 
-        Database database = await InitializeDatabase(client, "EntertainmentDatabase");
+        _client = new CosmosClient(_endpointUri, _primaryKey);
+
+        Database database = await InitializeDatabase(_client, "EntertainmentDatabase");
 
         Container container = await InitializeContainer(database, "EntertainmentContainer");
 
@@ -26,10 +28,9 @@ public class Program
 
     private static async Task<Database> InitializeDatabase(CosmosClient client, string databaseId)
     {
-        DatabaseResponse databaseResponse = await client.CreateDatabaseIfNotExistsAsync("EntertainmentDatabase");
-        Database targetDatabase = databaseResponse.Database;
-        await Console.Out.WriteLineAsync($"Database Id:\t{targetDatabase.Id}");
-        return targetDatabase;
+        Database database = await client.CreateDatabaseIfNotExistsAsync(databaseId);
+        await Console.Out.WriteLineAsync($"Database Id:\t{database.Id}");
+        return database;
     }
 
     private static async Task<Container> InitializeContainer(Database database, string containerId)
@@ -56,11 +57,10 @@ public class Program
 
         ContainerProperties containerProperties = new ContainerProperties(containerId, "/type")
         {
-            IndexingPolicy = indexingPolicy,
+            IndexingPolicy = indexingPolicy
         };
         
-        ContainerResponse containerResponse = await database.CreateContainerIfNotExistsAsync(containerProperties, 10000);
-        Container container = containerResponse.Container;
+        Container container = await database.CreateContainerIfNotExistsAsync(containerProperties, 400);
         await Console.Out.WriteLineAsync($"Container Id:\t{container.Id}");
         return container;
     }

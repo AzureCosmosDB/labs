@@ -16,12 +16,12 @@ public class Program
 
     public static async Task Main(string[] args)
     {
-        using (CosmosClient client = new CosmosClient(_endpointUri, _primaryKey))
-        {
-            var database = client.GetDatabase(_databaseId);
-            var peopleContainer = database.GetContainer(_peopleCollectionId);
-            var transactionContainer = database.GetContainer(_transactionCollectionId);
+        using CosmosClient client = new CosmosClient(_endpointUri, _primaryKey);
+        
+        Database database = client.GetDatabase(_databaseId);
+        Container peopleContainer = database.GetContainer(_peopleCollectionId);
+        Container transactionContainer = database.GetContainer(_transactionCollectionId);
 
-        }
+        
     }
 }
