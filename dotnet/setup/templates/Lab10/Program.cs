@@ -11,11 +11,11 @@ public class Program
 
     public static async Task Main(string[] args)
     {
-        using (CosmosClient client = new CosmosClient(_endpointUri, _primaryKey))
-        {
-            var database = client.GetDatabase(_databaseId);
-            var container = database.GetContainer(_containerId);
+        using CosmosClient client = new CosmosClient(_endpointUri, _primaryKey);
+        
+        Database database = client.GetDatabase(_databaseId);
+        Container container = database.GetContainer(_containerId);
 
-        }
+        
     }
 }

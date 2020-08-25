@@ -15,18 +15,18 @@ public class Program
 
     public static async Task Main(string[] args)
     {
-        using (CosmosClient client = new CosmosClient(_endpointUri, _primaryKey))
-        {
-            Database database = client.GetDatabase(_databaseId);
-            Container container = database.GetContainer(_containerId);
+        using CosmosClient client = new CosmosClient(_endpointUri, _primaryKey);
+        
+        Database database = client.GetDatabase(_databaseId);
+        Container container = database.GetContainer(_containerId);
 
-            List<Food> foods = new Bogus.Faker<Food>()
-            .RuleFor(p => p.Id, f => (-1 - f.IndexGlobal).ToString())
-            .RuleFor(p => p.Description, f => f.Commerce.ProductName())
-            .RuleFor(p => p.ManufacturerName, f => f.Company.CompanyName())
-            .RuleFor(p => p.FoodGroup, f => "Energy Bars")
-            .Generate(10000);
+        List<Food> foods = new Bogus.Faker<Food>()
+        .RuleFor(p => p.Id, f => (-1 - f.IndexGlobal).ToString())
+        .RuleFor(p => p.Description, f => f.Commerce.ProductName())
+        .RuleFor(p => p.ManufacturerName, f => f.Company.CompanyName())
+        .RuleFor(p => p.FoodGroup, f => "Energy Bars")
+        .Generate(10000);
 
-        }
+        
     }
 }

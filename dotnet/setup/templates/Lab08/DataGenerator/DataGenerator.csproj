@@ -1,18 +1,13 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>netcoreapp2.1</TargetFramework>
-    <LangVersion>latest</LangVersion>
-  </PropertyGroup>
-
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Bogus" Version="27.0.1" />
-    <PackageReference Include="Microsoft.Azure.Cosmos" Version="3.0.0" />
+    <PackageReference Include="Bogus" Version="30.0.2" />
+    <PackageReference Include="Microsoft.Azure.Cosmos" Version="3.12.0" />
   </ItemGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\Shared\Shared.csproj" />
   </ItemGroup>
-
 </Project>

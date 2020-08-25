@@ -20,9 +20,9 @@ namespace ChangeFeedConsole
 
         static async Task Main(string[] args)
         {
-                var db = cosmosClient.GetDatabase(_databaseId);
-                var container = db.GetContainer(_containerId);
-                var destinationContainer = db.GetContainer(_destinationContainerId);
+                Database database = cosmosClient.GetDatabase(_databaseId);
+                Container container = db.GetContainer(_containerId);
+                Container destinationContainer = db.GetContainer(_destinationContainerId);
 
                 //todo: Add lab code here
 
