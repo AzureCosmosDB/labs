@@ -185,10 +185,10 @@ Run the query below:
 
 ```sql
 SELECT food.id,
-       food.description,
-       food.tags,
-       food.foodGroup,
-       food.version
+food.description,
+food.tags,
+food.foodGroup,
+food.version
 FROM food
 WHERE food.foodGroup IN ("Poultry Products", "Sausages and Luncheon Meats")
     AND (food.id BETWEEN "05740" AND "07050")

@@ -6,7 +6,7 @@ In this lab, you will modify the indexing policy of an Azure Cosmos DB container
 
 ## Indexing Overview
 
-Azure Cosmos DB is a schema-agnostic database that allows you to iterate on your application without having to deal with schema or index management. By default, Azure Cosmos DB automatically indexes every property for all items in your container without the need to define any schema or configure secondary indexes. If you chose to leave indexing policy at the default settings, you can run most queries with optimal performance and never have to explicitly consider indexing. However, if you want control over adding or removing properties from the index, modification is possible through the Azure Portal or any SQL API SDK.
+Azure Cosmos DB is a schema-agnostic database that allows you to iterate on your application without having to deal with schema or index management. By default, Azure Cosmos DB automatically indexes every property for all items in your container without the need to define any schema or configure secondary indexes. If you chose to leave indexing policy at the default settings, you can run most queries with optimal performance and never have to explicitly consider indexing. However, if you want control over adding or removing properties from the index, modification is possible through the Azure Portal, ARM template, PowerShell, Azure CLI or any Cosmos DB SDK.
 
 Azure Cosmos DB uses an inverted index, representing your data in a tree form. For a brief introduction on how this works, read our [indexing overview](https://docs.microsoft.com/en-us/azure/cosmos-db/index-overview) before continuing with the lab.
 
@@ -34,14 +34,14 @@ In this lab section, you will view and modify the indexing policy for your **Foo
 9. Review the **Indexing Policy** section
 
     - Notice you can edit the JSON file that defines your container's index
-    - An Indexing policy can also be modified through any Azure Cosmos DB SDK
+    - An Indexing policy can also be modified through any Azure Cosmos DB SDK as well as ARM template, PowerShell or Azure CLI
     - During this lab we will modify the indexing policy through the Azure Portal
 
    ![The Indexing Policy window is highlighted](../media/04-indexingpolicy-initial.jpg "Review the indexing policy of the FoodCollection")
 
-### Including and excluding Range Indexes
+### Including and excluding Indexes
 
-Instead of including a range index on every property by default, you can chose to either include or exclude specific paths from the index. Let's go through some simple examples (no need to enter these into the Azure Portal, we can just review them here).
+Instead of including an index on every property by default, you can chose to either include or exclude specific paths from the index. Let's go through some simple examples (no need to enter these into the Azure Portal, we can just review them here).
 
 Within the **FoodCollection**, documents have this schema (some properties were removed for simplicity):
 
@@ -60,7 +60,6 @@ Within the **FoodCollection**, documents have this schema (some properties were 
             "name": "9 oz house sirloin steak"
         }
     ],
-
     "manufacturerName": "Applebee's",
     "foodGroup": "Restaurant Foods",
     "nutrients": [
@@ -80,28 +79,29 @@ Within the **FoodCollection**, documents have this schema (some properties were 
 }
 ```
 
-If you wanted to only index the manufacturerName, foodGroup, and nutrients array with a range index, you should define the following index policy. In this example, we use the wildcard character `*` to indicate that we would like to index all paths within the nutrients array.
+If you wanted to only index the manufacturerName, foodGroup, and nutrients array, you should define the following index policy. In this example, we use the wildcard character `*` to indicate that we would like to index all paths within the nutrients array.
 
 ```json
 {
-        "indexingMode": "consistent",
-        "includedPaths": [
-            {
-                "path": "/manufacturerName/*"
-            },
-            {
-                "path": "/foodGroup/*"
-            },
-            {
-                "path": "/nutrients/[]/*"
-            }
-        ],
-        "excludedPaths": [
-            {
-                "path": "/*"
-            }
-        ]
-    }
+    "indexingMode": "consistent",
+    "automatic": true,
+    "includedPaths": [
+        {
+            "path": "/manufacturerName/*"
+        },
+        {
+            "path": "/foodGroup/*"
+        },
+        {
+            "path": "/nutrients/[]/*"
+        }
+    ],
+    "excludedPaths": [
+        {
+            "path": "/*"
+        }
+    ]
+}
 ```
 
 However, it's possible we may just want to index the nutritionValue of each array element.
@@ -110,29 +110,30 @@ In this next example, the indexing policy would explicitly specify that the nutr
 
 ```json
 {
-        "indexingMode": "consistent",
-        "includedPaths": [
-            {
-                "path": "/manufacturerName/*"
-            },
-            {
-                "path": "/foodGroup/*"
-            },
-            {
-                "path": "/nutrients/[]/nutritionValue/*"
-            }
-        ],
-        "excludedPaths": [
-            {
-                "path": "/*"
-            }
-        ]
-    }
+    "indexingMode": "consistent",
+    "automatic": true,
+    "includedPaths": [
+        {
+            "path": "/manufacturerName/*"
+        },
+        {
+            "path": "/foodGroup/*"
+        },
+        {
+            "path": "/nutrients/[]/nutritionValue/*"
+        }
+    ],
+    "excludedPaths": [
+        {
+            "path": "/*"
+        }
+    ]
+}
 ```
 
 Finally, it's important to understand the difference between the `*` and `?` characters.
 
-The `*` character indicates that Azure Cosmos DB should index every path beyond that specific node. 
+The `*` character indicates that Azure Cosmos DB should index every path beyond that specific node.
 
 The `?` character indicates that Azure Cosmos DB should index no further paths beyond this node.
 
@@ -140,7 +141,7 @@ In the above example, there are no additional paths under nutritionValue. If we 
 
 ### Understand query requirements
 
-Before modifying indexing policy, it's important to understand how the data is used in the collection. 
+Before modifying indexing policy, it's important to understand how the data is used in the collection.
 
 If your workload is write-heavy or your documents are large, you should only index necessary paths. This will significantly decrease the amount of RU's required for inserts, updates, and deletes.
 
@@ -158,7 +159,7 @@ SELECT * FROM c WHERE c.manufacturerName = <manufacturerName>
 SELECT * FROM c WHERE c.foodGroup = <foodGroup>
 ```
 
-These queries only require that a range index be defined on **manufacturerName** and **foodGroup**, respectively. We can modify the indexing policy to index only these properties.
+These queries only require an index be defined on **manufacturerName** and **foodGroup**. We can modify the indexing policy to index only these properties.
 
 ### Edit the indexing policy by including paths
 
@@ -169,6 +170,7 @@ These queries only require that a range index be defined on **manufacturerName**
     ```json
     {
         "indexingMode": "consistent",
+        "automatic": true,
         "includedPaths": [
             {
                 "path": "/manufacturerName/*"
@@ -185,11 +187,11 @@ These queries only require that a range index be defined on **manufacturerName**
     }
     ```
 
-    > This new indexing policy will create a range index on only the manufacturerName and foodGroup properties. It will remove range indexes on all other properties.
+    > This new indexing policy will create an index on only the manufacturerName and foodGroup properties. It will remove indexes on all other properties.
 
 4. Select **Save**. Azure Cosmos DB will update the index in the container, using your excess provisioned throughput to make the updates.
 
-    > During the container re-indexing, write performance is unaffected. However, queries may return incomplete results.
+    > During the container re-indexing, write performance is unaffected. Queries run during the index update will not use the new index policy until it has been rebuilt.
 
 5. In the menu, select the **New SQL Query** icon.
 6. Paste the following SQL query and select **Execute Query**:
@@ -208,13 +210,13 @@ These queries only require that a range index be defined on **manufacturerName**
     SELECT * FROM c WHERE c.description = "Bread, blue corn, somiviki (Hopi)"
     ```
 
-9. Observe that this query has a very high RU charge even though only a single document is returned. This is because no range index is currently defined for the `description` property.
+9. Observe that this query has a very high RU charge even though only a single document is returned. This is because no index is currently defined for the `description` property.
 
 10. Observe the **Query Metrics**:
 
     ![Query metrics are displayed for the previous query](../media/04-querymetrics_02.JPG "Review the query metrics")
 
-    > If a query does not use the index, the **Index hit document count** will be 0. We can see above that the query needed to retrieve 5,187 documents and ultimately ended up only returning 1 document.
+    > If a query does not use the index, the **Index hit document count** will be 0. We can see above that the query needed to retrieve 8,618 documents and ultimately ended up only returning 1 document.
 
 ### Edit the indexing policy by excluding paths
 
@@ -229,6 +231,7 @@ We will create an indexing policy to index every path except for the **descripti
     ```json
     {
         "indexingMode": "consistent",
+        "automatic": true,
         "includedPaths": [
             {
                 "path": "/*"
@@ -242,11 +245,11 @@ We will create an indexing policy to index every path except for the **descripti
     }
     ```
 
-    > This new indexing policy will create a range index on every property **except** for the description.
+    > This new indexing policy will create an index on every property **except** for the description.
 
 4. Select **Save**. Azure Cosmos DB will update the index in the container, using your excess provisioned throughput to make the updates.
 
-    > During the container re-indexing, write performance is unaffected. However, queries may return incomplete results.
+    > During the container re-indexing, write performance is unaffected. Queries run during the index update will not use the new index policy until it has been rebuilt.
 
 5. After defining the new indexing policy, navigate to your **FoodCollection** and select the **Add New SQL Query** icon. Paste the following SQL query and select **Execute Query**:
 
@@ -283,7 +286,7 @@ For ORDER BY queries that order by multiple properties, a composite index is req
     "The order by query does not have a corresponding composite index that it can be served from."
     ```
 
-    > In order to run a query that has an ORDER BY clause with one property, the default range index is sufficient. Queries with multiple properties in the ORDER BY clause require a composite index.
+    > In order to run a query that has an ORDER BY clause with one property, the default index is sufficient. Queries with multiple properties in the ORDER BY clause require a composite index.
 
 5. Still within the **FoodCollection** node, select the **Scale & Settings** link. In the **Indexing Policy** section, you will add a composite index.
 
@@ -485,7 +488,7 @@ First, you will create a new Cosmos container named volcanoes inside a new datab
 
 4. Observe the **Query Stats** for this operation. Because the container has a geo-spatial index for Points, this query consumed a small amount of RU's.
 
-    ![Query metrics are displayed for the previous query](../media/04-querymetrics_geo.JPG "Review the query metrics")
+    ![Query metrics are displayed for the previous query](../media/04-querymetrics_geo.jpg "Review the query metrics")
 
 ### Query sample polygon data
 
@@ -567,7 +570,7 @@ You should restore the **FoodCollection** indexing policy to the default setting
 
 ### Delete the **VolcanoContainer**
 
-You will not need the **VolcanoContainer** during additional lab sections. You should delete this container now.
+You will not need the **VolcanoContainer** during additional lab sections. You can delete this container now. Or otherwise reduce it's RU/s to 400 RU/s.
 
 1. Navigate to the **Data Explorer**
 2. Select the three dots near your **VolcanoContainer**. From the menu, select **Delete Container**.

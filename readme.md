@@ -9,6 +9,7 @@
 - [Sample Schedule](./decks/CosmosDBWorkshopSchedule2019.docx)
 
 **Deep-Dive Powerpoint Decks**
+
 - [Overview, Value Proposition & Use Cases](./decks/Overview-Value-Proposition-Use-Cases.pptx)
 - [Resource Model](./decks/Resource-Model.pptx)
 - [Request Units & Billing](./decks/Request-Units-Billing.pptx)
@@ -23,9 +24,11 @@
 - [Security](./decks/Security.pptx)
 
 **References**
+
 - [Use-Case cheat sheet (1-pager)](./decks/1Pager-Use-Cases.pptx)
 
 In addition to the above workshop decks, we have hands-on labs. We have labs available for our .NET sdk and Java sdk below:
+
 # .NET (V3) Labs
 
 **.NET Lab Prerequisites**
@@ -36,15 +39,13 @@ Prior to starting these labs, you must have the following operating system and s
 
 - 64-bit Windows 10 Operating System
   - [download](https://www.microsoft.com/windows/get-windows-10)
-- Microsoft .NET Framework 4.5.1 or higher <sup>1</sup>
-  - [download](http://go.microsoft.com/fwlink/?LinkId=863262)
 
 **Software**
 
 | Software                                    | Download Link                                                |
 | ------------------------------------------- | ------------------------------------------------------------ |
 | Git                                         | [/git-scm.com/downloads](https://git-scm.com/downloads)      |
-| .NET Core 2.1 (or greater) SDK <sup>2</sup> | [/download.microsoft.com/dotnet-sdk-2.1](https://download.microsoft.com/download/E/2/6/E266C257-F7AF-4E79-8EA2-DF26031C84E2/dotnet-sdk-2.1.103-win-gs-x64.exe) |
+| .NET Core 3.1 (or greater) SDK <sup>1</sup> | [/download.microsoft.com/dotnet-sdk-3.1](https://dotnet.microsoft.com/download/dotnet-core/thank-you/sdk-3.1.401-windows-x64-installer) |
 | Visual Studio Code                          | [/code.visualstudio.com/download](https://go.microsoft.com/fwlink/?Linkid=852157) |
 
 ------
@@ -70,8 +71,7 @@ Prior to starting these labs, you must have the following operating system and s
 
 **Notes**
 
-1. If you are unsure of what version of the .NET Framework you have installed on your local machine, you can visit the following link to view instructions on determining your installed version: <https://docs.microsoft.com/dotnet/framework/migration-guide/how-to-determine-which-versions-are-installed>.
-2. If you already have .NET Core installed on your local machine, you should check the version of your .NET Core installation using the ``dotnet --version`` command.
+1. If you already have .NET Core installed on your local machine, you should check the version of your .NET Core installation using the ``dotnet --version`` command.
 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
