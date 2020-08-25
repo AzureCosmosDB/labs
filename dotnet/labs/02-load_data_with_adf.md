@@ -38,7 +38,7 @@ You will now create a database and container within your Azure Cosmos DB account
 
     4. In the **Partition key** field, enter the value ``/foodGroup``.
 
-    5. In the **Throughput** field, enter the value ``11000``.
+    5. In the **Throughput** field, enter the value ``11000``. *Note: we will reduce this to 400 RU/s after the data has been imported*
 
     6. Select the **OK** button.
 
@@ -48,7 +48,7 @@ You will now create a database and container within your Azure Cosmos DB account
 
 You will use **Azure Data Factory (ADF)** to import the JSON array stored in the **nutrition.json** file from Azure Blob Storage.
 
-You do not need to do Steps 1-4 in this section and can proceed to Step 5 by opening your Data Factory (named importNutritionData with a random number suffix)if you are completing the lab through Microsoft Hands-on Labs or ran the setup script, you can use the pre-created Data Factory within your resource group.
+You do not need to do Steps 1-4 in this section and can proceed to Step 4 by opening your Data Factory (named importNutritionData with a random number suffix)if you are completing the lab through Microsoft Hands-on Labs or ran the setup script, you can use the pre-created Data Factory within your resource group.
 
 1. On the left side of the portal, select the **Resource groups** link.
 
@@ -58,7 +58,7 @@ You do not need to do Steps 1-4 in this section and can proceed to Step 5 by ope
 
 2. In the **Resource groups** blade, locate and select the **cosmoslabs** resource group.
 
-3. If you see a Data Factory resource, you can skip to step 5, otherwise select **Add** to add a new resource
+3. If you see a Data Factory resource, you can skip to step 4, otherwise select **Add** to add a new resource
 
     ![A data factory resource is highlighted](../media/03-adf-isntance.png "Review if you have data factory already")
 
@@ -104,7 +104,7 @@ You do not need to do Steps 1-4 in this section and can proceed to Step 5 by ope
 
     ![The nutritiiondata folder is displayed](../media/03-adf_choosestudents.jpg "Select the NutritionData.json file")
 
-13. Un-check **Copy file recursively** or **Binary Copy** if they are checked. Also ensure that other fields are empty.
+13. Un-check **Copy file recursively** or **Binary Copy** if they are checked. Also ensure that other fields are empty. Click **Next**
 
     ![The input file or folder dialog is displayed](../media/03-adf_source_next.jpg "Ensure all other fields are empty, select next")
 
@@ -175,6 +175,10 @@ You will validate that the data was successfully imported into your container us
 1. In the **Data Explorer** section, expand the **ImportDatabase** database node and then expand the **FoodCollection** container node.
 
     ![The Container node is displayed](../media/03-collection_node.jpg "Expand the ImportDatabase node")
+
+1. Within the **FoodCollection** node, select the **Scale and Settings** link to view the throughput for the container. Reduce the throughput to **400 RU/s**.
+
+    ![Scale and Settings](../media/03-collection-settings.png "Reduce throughput")
 
 1. Within the **FoodCollection** node, select the **Items** link to view a subset of the various documents in the container. Select a few of the documents and observe the properties and structure of the documents.
 
