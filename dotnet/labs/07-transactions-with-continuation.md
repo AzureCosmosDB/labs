@@ -156,23 +156,31 @@ You will now implement stored procedures that may execute longer than the bounde
 
    > This command will build the project.
 
-2. In the **Explorer** pane verify that you have a **DataTypes.cs** file in your project folder.
+1. In the **Explorer** pane verify that you have a **DataTypes.cs** file in your project folder.
 
    > This file contains the data classes you will be working with in the following steps.
 
-3. Double-click the **Program.cs** link in the **Explorer** pane to open the file in the editor.
+1. Double-click the **Program.cs** link in the **Explorer** pane to open the file in the editor.
 
-4. For the `_endpointUri` variable, replace the placeholder value with the **URI** value and for the `_primaryKey` variable, replace the placeholder value with the **PRIMARY KEY** value from your Azure Cosmos DB account. Use [these instructions](00-account_setup.md) to get these values if you do not already have them:
+1. For the `_endpointUri` variable, replace the placeholder value with the **URI** value and for the `_primaryKey` variable, replace the placeholder value with the **PRIMARY KEY** value from your Azure Cosmos DB account. Use [these instructions](00-account_setup.md) to get these values if you do not already have them:
 
-   - For example, if your **uri** is `https://cosmosacct.documents.azure.com:443/`, your new variable assignment will look like this: `private static readonly string _endpointUri = "https://cosmosacct.documents.azure.com:443/";`.
+   - For example, if your **uri** is `https://cosmosacct.documents.azure.com:443/`, your new variable assignment will look like this: 
 
-   - For example, if your **primary key** is `elzirrKCnXlacvh1CRAnQdYVbVLspmYHQyYrhx0PltHi8wn5lHVHFnd1Xm3ad5cn4TUcH4U0MSeHsVykkFPHpQ==`, your new variable assignment will look like this: `private static readonly string _primaryKey = "elzirrKCnXlacvh1CRAnQdYVbVLspmYHQyYrhx0PltHi8wn5lHVHFnd1Xm3ad5cn4TUcH4U0MSeHsVykkFPHpQ==";`.
+    ```csharp
+    private static readonly string _endpointUri = "https://cosmosacct.documents.azure.com:443/";
+    ```
 
-5. Save all of your open editor tabs.
+   - For example, if your **primary key** is `elzirrKCnXlacvh1CRAnQdYVbVLspmYHQyYrhx0PltHi8wn5lHVHFnd1Xm3ad5cn4TUcH4U0MSeHsVykkFPHpQ==`, your new variable assignment will look like this: 
 
-6. In the Visual Studio Code window, right-click the **Explorer** pane and select the **Open in Terminal** menu option.
+   ```csharp
+   private static readonly string _primaryKey = "elzirrKCnXlacvh1CRAnQdYVbVLspmYHQyYrhx0PltHi8wn5lHVHFnd1Xm3ad5cn4TUcH4U0MSeHsVykkFPHpQ==";
+   ```
 
-7. In the open terminal pane, enter and execute the following command:
+1. Save all of your open editor tabs.
+
+1. In the Visual Studio Code window, right-click the **Explorer** pane and select the **Open in Terminal** menu option.
+
+1. In the open terminal pane, enter and execute the following command:
 
    ```sh
    dotnet build
@@ -184,7 +192,7 @@ You will now implement stored procedures that may execute longer than the bounde
 
 1. In the Visual Studio Code window, double select to open the **Program.cs** file
 
-1. Locate the **Main** method within the **Program** class:
+1. Locate the **BulkUpload** method within the **Program** class:
 
    ```csharp
    public static async Task Main(string[] args)
@@ -192,7 +200,7 @@ You will now implement stored procedures that may execute longer than the bounde
 
    > As a reminder, the Bogus library generates a set of test data. In this example, you are creating 10,000 items using the Bogus library and the rules listed. The **Generate** method tells the Bogus library to use the rules to create the specified number of entities and store them in a generic **List<T>**.
 
-1. Within the **using** block, add the following line of code to create a variable named **pointer** with a default value of **zero**.
+1. Below the `.Generate(10000)` statement add the following line of code to create a variable named **pointer** with a default value of **zero**.
 
    ```csharp
    int pointer = 0;
@@ -200,10 +208,13 @@ You will now implement stored procedures that may execute longer than the bounde
 
    > We are going to use this variable to determine how many documents were uploaded by our stored procedure.
 
-1. Still within the **using** block, add the following **while** block to continue to iterate code as long as the value of the **pointer** field is _less than_ the amount of items in the **foods** collection:
+1. Next, add the following **while** block to continue to iterate code as long as the value of the **pointer** field is _less than_ the amount of items in the **foods** collection:
 
    ```js
-   while (pointer < foods.Count) {}
+   while (pointer < foods.Count)
+   {
+
+   }
    ```
 
    > We are going to create a while loop that will keep uploading documents until the pointer's value greater than or equal to the amount of food objects in our object set.
@@ -230,33 +241,42 @@ You will now implement stored procedures that may execute longer than the bounde
    await Console.Out.WriteLineAsync($"{pointer} Total Items\t{result.Resource} Items Uploaded in this Iteration");
    ```
 
-1. Your **Main** method should now look like this:
+1. Locate the **Main** method and add the following line of code:
 
    ```csharp
-    public static async Task Main(string[] args)
-    {
-        using (CosmosClient client = new CosmosClient(_endpointUri, _primaryKey))
-        {
-            Database database = client.GetDatabase(_databaseId);
-            Container container = database.GetContainer(_containerId);
+   await BulkUpload(container);
+   ```
 
-            List<Food> foods = new Bogus.Faker<Food>()
-            .RuleFor(p => p.Id, f => (-1 - f.IndexGlobal).ToString())
-            .RuleFor(p => p.Description, f => f.Commerce.ProductName())
-            .RuleFor(p => p.ManufacturerName, f => f.Company.CompanyName())
-            .RuleFor(p => p.FoodGroup, f => "Energy Bars")
-            .Generate(10000);
+1. Your **Main** method and **BulkUpload** should now look like this:
 
-            int pointer = 0;
-            while (pointer < foods.Count)
-            {
-                StoredProcedureExecuteResponse<int> result = await container.Scripts.ExecuteStoredProcedureAsync<int>("bulkUpload", new PartitionKey("Energy Bars"), new dynamic[] {foods.Skip(pointer)});
-                pointer += result.Resource;
-                await Console.Out.WriteLineAsync($"{pointer} Total Items\t{result.Resource} Items Uploaded in this Iteration");
-            }
+   ```csharp
+   public static async Task Main(string[] args)
+   {
+      _client = new CosmosClient(_endpointUri, _primaryKey))
 
-        }
-    }
+      Database database = _client.GetDatabase(_databaseId);
+      Container container = database.GetContainer(_containerId);
+
+      await BulkUpload();
+   }
+
+   Private static Task BulkUpload()
+   {
+      List<Food> foods = new Bogus.Faker<Food>()
+      .RuleFor(p => p.Id, f => (-1 - f.IndexGlobal).ToString())
+      .RuleFor(p => p.Description, f => f.Commerce.ProductName())
+      .RuleFor(p => p.ManufacturerName, f => f.Company.CompanyName())
+      .RuleFor(p => p.FoodGroup, f => "Energy Bars")
+      .Generate(10000);
+
+      int pointer = 0;
+      while (pointer < foods.Count)
+      {
+            StoredProcedureExecuteResponse<int> result = await container.Scripts.ExecuteStoredProcedureAsync<int>("bulkUpload", new PartitionKey("Energy Bars"), new dynamic[] {foods.Skip(pointer)});
+            pointer += result.Resource;
+            await Console.Out.WriteLineAsync($"{pointer} Total Items\t{result.Resource} Items Uploaded in this Iteration");
+      }
+   }
    ```
 
       - You will notice that our C# code using the **Skip** method of the LINQ library to submit only the subset of our documents that are not yet uploaded.
@@ -268,9 +288,12 @@ You will now implement stored procedures that may execute longer than the bounde
 
       > Also keep in mind that as of this writing, Cosmos DB has a 2 MB request limit on all calls. If your data is bigger than this test data, consider chaining `.Take()` to `foods.Skip(point)` to send a smaller payload with each request.
 
-2. Press **Ctrl-S** to save the `program.cs` file
+1. Press **Ctrl-S** to save the `program.cs` file
 
-3. In the open terminal pane, enter and execute the following command:
+> [!NOTE]
+> Before running this code, return to the Azure Portal and make sure the FoodCollection container is scaled up to 10,000 RU/s.
+
+1. In the open terminal pane, enter and execute the following command:
 
    ```sh
    dotnet run
@@ -278,7 +301,7 @@ You will now implement stored procedures that may execute longer than the bounde
 
    > This command will build and execute the console project.
 
-4. Observe the results of the console project.
+1. Observe the results of the console project.
 
    > This stored procedure will batch upload 10,000 documents to your collection within the specified partition key.
 
@@ -304,11 +327,11 @@ You will now implement stored procedures that may execute longer than the bounde
    SELECT * FROM foods f WHERE f.foodGroup = "Energy Bars"
    ```
 
-2. Select the **Execute Query** button in the query tab to run the query.
+1. Select the **Execute Query** button in the query tab to run the query.
 
-3. In the **Results** pane, observe the results of your query.
+1. In the **Results** pane, observe the results of your query.
 
-4. In the query tab, replace the contents of the query editor with the following SQL query:
+1. In the query tab, replace the contents of the query editor with the following SQL query:
 
    ```sql
    SELECT COUNT(1) FROM foods f WHERE f.foodGroup = "Energy Bars"
@@ -316,56 +339,56 @@ You will now implement stored procedures that may execute longer than the bounde
 
    > This query will return a count of the documents that are in the **Energy Bars** partition key.
 
-5. Select the **Execute Query** button in the query tab to run the query.
+1. Select the **Execute Query** button in the query tab to run the query.
 
-6. In the **Results** pane, observe the results of your query.
+1. In the **Results** pane, observe the results of your query.
 
 ### Execute Bulk Delete Stored Procedure from .NET Core SDK
 
 1. In the Visual Studio Code pane, double select the **Program.cs** file to open it in the editor.
 
-1. Locate the **Main** method and delete any existing code:
-
-   ```csharp
-   public static async Task Main(string[] args)
-   {
-
-   }
-   ```
-
    > The next stored procedure returns a complex JSON object instead of a simple typed value. We use a custom `DeleteStatus` C# class to deserialize the JSON object so we can use its data in our C# code.
 
-1. Replace the **Main** method with the following implementation:
+1. Locate the **BulkDelete** method and add the following code:
 
    ```csharp
-    public static async Task Main(string[] args)
+    private static async Task BulkDelete(Container container)
     {
-        using (CosmosClient client = new CosmosClient(_endpointUri, _primaryKey))
+        bool resume = true;
+        do
         {
-            Database database = client.GetDatabase(_databaseId);
-            Container container = database.GetContainer(_containerId);
+            string query = "SELECT * FROM foods f WHERE f.foodGroup = 'Energy Bars'";
+                StoredProcedureExecuteResponse<DeleteStatus> result = await container.Scripts.ExecuteStoredProcedureAsync<DeleteStatus>("bulkDelete", new PartitionKey("Energy Bars"),  new dynamic[] {query});
 
-            bool resume = true;
-            do
-            {
-                string query = "SELECT * FROM foods f WHERE f.foodGroup = 'Energy Bars'";
-                 StoredProcedureExecuteResponse<DeleteStatus> result = await container.Scripts.ExecuteStoredProcedureAsync<DeleteStatus>("bulkDelete", new PartitionKey("Energy Bars"),  new dynamic[] {query});
-
-                await Console.Out.WriteLineAsync($"Batch Delete Completed.\tDeleted: {result.Resource.Deleted}\tContinue: {result.Resource.Continuation}");
-                resume = result.Resource.Continuation;
-            }
-            while (resume);
+            await Console.Out.WriteLineAsync($"Batch Delete Completed.\tDeleted: {result.Resource.Deleted}\tContinue: {result.Resource.Continuation}");
+            resume = result.Resource.Continuation;
         }
+        while (resume);
     }
    ```
 
    > This code will execute the stored procedure that deletes documents as long as the **resume** variable is set to true. The stored procedure itself always returns an object, serialized as **DeleteStatus**, that has a boolean indicating whether we should continue deleting documents and a number indicating how many documents were deleted as part of this execution. Within the do-while loop, we simply store the value of the boolean returned from the stored procedure in our **resume** variable and continue executing the stored procedure until it returns a false value indicating that all documents were deleted.
 
-2. Save all of your open editor tabs.
+1. Locate the **Main** method and comment out `await BulkUpdate(container)` and call the `BulkDelete` method. The method should look like this:
 
-3. In the Visual Studio Code window, right-click the **Explorer** pane and select the **Open in Terminal** menu option.
+   ```csharp
+    public static async Task Main(string[] args)
+    {
+        _client = new CosmosClient(_endpointUri, _primaryKey);
 
-4. In the open terminal pane, enter and execute the following command:
+        Database database = _client.GetDatabase(_databaseId);
+        Container container = database.GetContainer(_containerId);
+
+        //await BulkUpload(container);
+        await BulkDelete(container);
+    }
+   ```
+
+1. Save all of your open editor tabs.
+
+1. In the Visual Studio Code window, right-click the **Explorer** pane and select the **Open in Terminal** menu option.
+
+1. In the open terminal pane, enter and execute the following command:
 
    ```sh
    dotnet run
@@ -373,11 +396,11 @@ You will now implement stored procedures that may execute longer than the bounde
 
    > This command will build and execute the console project.
 
-5. Observe the results of the console project.
+1. Observe the results of the console project.
 
    > This stored procedure will delete all of the documents associated with the specified partition key. In this demo, this means we will delete the documents we batch uploaded earlier.
 
-6. Close all open editor tabs.
+1. Close all open editor tabs.
 
 ### Query for Documents Within a Partition Key in the Azure Portal
 
@@ -406,6 +429,9 @@ You will now implement stored procedures that may execute longer than the bounde
 1. Select the **Execute Query** button in the query tab to run the query.
 
 1. In the **Results** pane, observe the results of your query.
+
+> [!NOTE]
+> If you are keeping this Container, consider scaling it down to 400 RU/s.
 
 1. Close your browser application.
 

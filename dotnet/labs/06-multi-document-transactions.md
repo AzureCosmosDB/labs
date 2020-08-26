@@ -315,7 +315,7 @@ All Azure Cosmos DB operations within a stored procedure are asynchronous and de
 
     - In the **Partition key value** section, use Type **String** and enter the value: `Vitamins`.
 
-    - Select the **Add New Param** button three times.
+    - Select the **Add New Param** button two times.
 
     - In the first field that appears, enter the value: `Vitamins`.
 
