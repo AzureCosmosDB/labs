@@ -45,24 +45,30 @@ After using the Azure Portal's **Data Explorer** to query an Azure Cosmos DB con
 
 9. For the `_endpointUri` variable, replace the placeholder value with the **URI** value and for the `_primaryKey` variable, replace the placeholder value with the **PRIMARY KEY** value from your Azure Cosmos DB account. Use [these instructions](00-account_setup.md) to get these values if you do not already have them:
 
-    - For example, if your **uri** is `https://cosmosacct.documents.azure.com:443/`, your new variable assignment will look like this: `private static readonly string _endpointUri = "https://cosmosacct.documents.azure.com:443/";`.
+    - For example, if your **uri** is `https://cosmosacct.documents.azure.com:443/`, your new variable assignment will look like this:
 
-    - For example, if your **primary key** is `elzirrKCnXlacvh1CRAnQdYVbVLspmYHQyYrhx0PltHi8wn5lHVHFnd1Xm3ad5cn4TUcH4U0MSeHsVykkFPHpQ==`, your new variable assignment will look like this: `private static readonly string _primaryKey = "elzirrKCnXlacvh1CRAnQdYVbVLspmYHQyYrhx0PltHi8wn5lHVHFnd1Xm3ad5cn4TUcH4U0MSeHsVykkFPHpQ==";`.
+    ```csharp
+    private static readonly string _endpointUri = "https://cosmosacct.documents.azure.com:443/";
+    ```
+
+    - For example, if your **primary key** is `elzirrKCnXlacvh1CRAnQdYVbVLspmYHQyYrhx0PltHi8wn5lHVHFnd1Xm3ad5cn4TUcH4U0MSeHsVykkFPHpQ==`, your new variable assignment will look like this:
+
+    ```csharp
+    private static readonly string _primaryKey = "elzirrKCnXlacvh1CRAnQdYVbVLspmYHQyYrhx0PltHi8wn5lHVHFnd1Xm3ad5cn4TUcH4U0MSeHsVykkFPHpQ==";
+    ```
 
 ## Read a single Document in Azure Cosmos DB Using ReadItemAsync
 
 ReadItemAsync allows a single item to be retrieved from Cosmos DB by its ID. In Azure Cosmos DB, this is the most efficient method of reading a single document.
 
-1. Locate the using block within the **Main** method:
+1. Locate the following code within the **Main** method:
 
-   ```csharp
-   using (CosmosClient client = new CosmosClient(_endpointUri, _primaryKey))
-   {
-       var database = client.GetDatabase(_databaseId);
-       var container = database.GetContainer(_containerId);
+    ```csharp
+    _client = new CosmosClient(_endpointUri, _primaryKey);
 
-   }
-   ```
+    Database database = _client.GetDatabase(_databaseId);
+    Container container = database.GetContainer(_containerId);
+    ```
 
 1. Add the following lines of code to use the **ReadItemAsync** function to retrieve a single item from your Cosmos DB by its `id` and write its description to the console.
 
@@ -159,7 +165,7 @@ ReadItemAsync allows a single item to be retrieved from Cosmos DB by its ID. In 
     FeedIterator<Food> queryB = container.GetItemQueryIterator<Food>(sqlB, requestOptions: new QueryRequestOptions{MaxConcurrency = 5, MaxItemCount = 100});
     ```
 
-    > Take note of the differences in this call to **GetItemQueryIterator** as compared to the previous section. **maxConcurrency** is set to `5` and we are limiting the **MaxItemCount** to `100` items. This will result in paging if there are more than 100 items that match the query.
+    > Take note of the differences in this call to **GetItemQueryIterator** as compared to the previous section. **MaxConcurrency** is set to `5`. MaxConcurrency Sets the maximum number of simultaneous network connections to the container's partitions. If you set this property to -1, the SDK manages the degree of parallelism. If the MaxConcurrency set to 0, there is a single network connection to the container's partitions. MaxItemCount trades query latency versus client-side memory utilization. If this option is omitted or to set to -1, the SDK manages the number of items buffered during parallel query execution. We are limiting the **MaxItemCount** to `100` items. This will result in paging if there are more than 100 items that match the query.
 
 4. Add the following lines of code to page through the results of this query using a while loop.
 
