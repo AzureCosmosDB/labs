@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Microsoft.Azure.Cosmos;
-using Bogus;
 using System.Collections.Generic;
 using Shared;
 
@@ -14,9 +13,9 @@ namespace DataGenerator
         private static readonly string _databaseId = "StoreDatabase";
         private static readonly string _containerId = "CartContainer";
 
-        private static CosmosClient cosmosClient = new CosmosClient(_endpointUrl, _primaryKey);
+        private static CosmosClient _cosmosClient = new CosmosClient(_endpointUrl, _primaryKey);
 
-        private Randomizer _random = new Randomizer();
+        private Random _random = new Random();
 
         static async Task Main(string[] args)
         {
@@ -40,15 +39,14 @@ namespace DataGenerator
 
         private static async Task AddItem(CartAction item)
         {
-                var db = cosmosClient.GetDatabase(_databaseId);
-                var container = db.GetContainer(_containerId);
+                Database database = _cosmosClient.GetDatabase(_databaseId);
+                Container container = database.GetContainer(_containerId);
 
                 await container.CreateItemAsync(item, new PartitionKey(item.Item));
         }
 
         private static List<CartAction> GenerateActions()
         {
-            Randomizer random = new Randomizer();
 
             var items = new string[]
             {
@@ -89,13 +87,16 @@ namespace DataGenerator
 
             var actions = new List<CartAction>();
 
-            var itemIndex = random.Number(0, items.Length - 1);
-            var stateIndex = random.Number(0, states.Length - 1);
+            int itemIndex = _random.Next(0, items.Length - 1);
+            int stateIndex = _random.Next(0, states.Length - 1);
+
+            Array values = Enum.GetValues(typeof(ActionType));
+            ActionType randomAction = (ActionType)values.GetValue(_random.Next(values.Length));
 
             var action = new CartAction
             {
-                CartId = random.Number(1000, 99999),
-                Action = random.Enum<ActionType>(),
+                CartId = _random.Next(1000, 99999),
+                Action = randomAction,
                 Item = items[itemIndex],
                 Price = prices[itemIndex],
                 BuyerState = states[stateIndex]

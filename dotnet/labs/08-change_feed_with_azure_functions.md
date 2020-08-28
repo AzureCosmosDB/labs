@@ -22,9 +22,17 @@ In order to simulate data flowing into our store, in the form of actions on an e
 
 1. For the `_endpointUrl` variable, replace the placeholder value with the **URI** value and for the `_primaryKey` variable, replace the placeholder value with the **PRIMARY KEY** value from your Azure Cosmos DB account. Use [these instructions](00-account_setup.md) to get these values if you do not already have them:
 
-   - For example, if your **url** is `https://cosmosacct.documents.azure.com:443/`, your new variable assignment will look like this: `private static readonly string _endpointUrl = "https://cosmosacct.documents.azure.com:443/";`.
+   - For example, if your **url** is `https://cosmosacct.documents.azure.com:443/`, your new variable assignment will look like this:
 
-   - For example, if your **primary key** is `elzirrKCnXlacvh1CRAnQdYVbVLspmYHQyYrhx0PltHi8wn5lHVHFnd1Xm3ad5cn4TUcH4U0MSeHsVykkFPHpQ==`, your new variable assignment will look like this: `private static readonly string _primaryKey = "elzirrKCnXlacvh1CRAnQdYVbVLspmYHQyYrhx0PltHi8wn5lHVHFnd1Xm3ad5cn4TUcH4U0MSeHsVykkFPHpQ==";`
+   ```csharp
+   private static readonly string _endpointUrl = "https://cosmosacct.documents.azure.com:443/";
+   ```
+
+   - For example, if your **primary key** is `elzirrKCnXlacvh1CRAnQdYVbVLspmYHQyYrhx0PltHi8wn5lHVHFnd1Xm3ad5cn4TUcH4U0MSeHsVykkFPHpQ==`, your new variable assignment will look like this:
+
+   ```csharp
+   private static readonly string _primaryKey = "elzirrKCnXlacvh1CRAnQdYVbVLspmYHQyYrhx0PltHi8wn5lHVHFnd1Xm3ad5cn4TUcH4U0MSeHsVykkFPHpQ==";
+   ```
 
 ### Create Function to Add Documents to Cosmos DB
 
@@ -35,8 +43,6 @@ The key functionality of the console application is to add documents to our Cosm
    > If you'd like to review how to add documents to a CosmosDB container, [refer to Lab 01 ](01-creating_partitioned_collection.md).
 
 ### Create a Function to Generate Random Shopping Data
-
-Now that you have a function to add documents to Cosmos DB you'll need a way to generate those documents. We'll use the *Randomizer* class in the Bogus library to help with this step
 
 1. Within the **Program.cs** file in the **DataGenerator** folder, locate the **GenerateActions** method. The purpose of this method is to create randomized **CartAction** objects that you'll consume using the CosmosDB change feed.
 
@@ -53,9 +59,9 @@ You're ready to run the console app, and in this step you'll take a look at your
    dotnet run
    ```
 
-3. After a brief build process, you should begin to see the asterisks being printed as data is being generated and written to Cosmos DB. 
+3. After a brief build process, you should begin to see the asterisks being printed as data is being generated and written to Cosmos DB.
 
-   ![The terminal window is displayed showing the program running outputting astricks](../media/08-console-running.jpg "Run the program, let it run for a minute or two")
+   ![The terminal window is displayed showing the program running outputting asterisks](../media/08-console-running.jpg "Run the program, let it run for a minute or two")
 
 4. Let the console app run for a minute or two and then stop it by pressing any key in the console.
 
@@ -97,7 +103,7 @@ The first use case we'll explore for Cosmos DB Change Feed is Live Migration. A 
 
    ```csharp
    ContainerProperties leaseContainerProperties = new ContainerProperties("consoleLeases", "/id");
-   Container leaseContainer = await db.CreateContainerIfNotExistsAsync(leaseContainerProperties, throughput: 400);
+   Container leaseContainer = await database.CreateContainerIfNotExistsAsync(leaseContainerProperties, throughput: 400);
    ```
 
    > The **Lease Container** stores information to allow for parallel processing of the change feed, and acts as a book mark for where we last processed changes from the feed.
@@ -148,41 +154,38 @@ The first use case we'll explore for Cosmos DB Change Feed is Live Migration. A 
            private static readonly string _databaseId = "StoreDatabase";
            private static readonly string _containerId = "CartContainer";
            private static readonly string _destinationContainerId = "CartContainerByState";
-           private static CosmosClient cosmosClient = new CosmosClient(_endpointUrl, _primaryKey);
+           private static CosmosClient _cosmosClient = new CosmosClient(_endpointUrl, _primaryKey);
 
            static async Task Main(string[] args)
            {
 
-               var db = cosmosClient.GetDatabase(_databaseId);
-               var container = db.GetContainer(_containerId);
-               var destinationContainer = db.GetContainer(_destinationContainerId);
+               Database database = cosmosClient.GetDatabase(_databaseId);
+               Container container = db.GetContainer(_containerId);
+               Container destinationContainer = db.GetContainer(_destinationContainerId);
 
-   				ContainerProperties leaseContainerProperties = new ContainerProperties("consoleLeases", "/id");
-   				Container leaseContainer = await  db.CreateContainerIfNotExistsAsync(leaseContainerProperties, throughput: 400);
-   
-                   var builder = container.GetChangeFeedProcessorBuilder(
-                       "migrationProcessor",
-                       (
-                           IReadOnlyCollection<object> input,
-                           CancellationToken cancellationToken) =>
-                   {
-                       Console.WriteLine(input.Count + " Changes Received");
-                       //todo: Add processor code here
-                   });
+               ContainerProperties leaseContainerProperties = new ContainerProperties("consoleLeases", "/id");
+               Container leaseContainer = await  db.CreateContainerIfNotExistsAsync(leaseContainerProperties, throughput: 400);
 
-                   var processor = builder
-                                   .WithInstanceName("changeFeedConsole")
-                                   .WithLeaseContainer(leaseContainer)
-                                   .Build();
+               var builder = container.GetChangeFeedProcessorBuilder("migrationProcessor",
+                  (IReadOnlyCollection<object> input, CancellationToken cancellationToken) =>
+                  {
+                     Console.WriteLine(input.Count + " Changes Received");
+                     //todo: Add processor code here
+                  });
 
-                   await processor.StartAsync();
-                   Console.WriteLine("Started Change Feed Processor");
-                   Console.WriteLine("Press any key to stop the processor...");
+               var processor = builder
+                               .WithInstanceName("changeFeedConsole")
+                               .WithLeaseContainer(leaseContainer)
+                               .Build();
 
-                   Console.ReadKey();
+               await processor.StartAsync();
+               Console.WriteLine("Started Change Feed Processor");
+               Console.WriteLine("Press any key to stop the processor...");
 
-                   Console.WriteLine("Stopping Change Feed Processor");
-                   await processor.StopAsync();
+               Console.ReadKey();
+
+               Console.WriteLine("Stopping Change Feed Processor");
+               await processor.StopAsync();
            }
        }
    }
@@ -195,27 +198,25 @@ The first use case we'll explore for Cosmos DB Change Feed is Live Migration. A 
 1. Modify the signature of the `Func<T>` in the `GetChangeFeedProcessorBuilder` replacing `object` with `CartAction` as follows:
 
    ```csharp
-   var builder = container.GetChangeFeedProcessorBuilder(
-                      "migrationProcessor", (
-                          IReadOnlyCollection<CartAction> input,
-                          CancellationToken cancellationToken) =>
-       {
-           Console.WriteLine(input.Count + " Changes Received");
-           //todo: Add processor code here
-       });
+   var builder = container.GetChangeFeedProcessorBuilder("migrationProcessor", 
+      (IReadOnlyCollection<CartAction> input, CancellationToken cancellationToken) =>
+      {
+         Console.WriteLine(input.Count + " Changes Received");
+         //todo: Add processor code here
+      });
    ```
 
-1. The **input** is a collection of **CartAction** documents that have changed. To migrate them, we'll simply loop through them and write them out to our destination container. Replace the `//todo` with the following code:
+1. The **input** is a collection of **CartAction** documents that have changed. To migrate them, we'll simply loop through them and write them out to our destination container. Replace the `//todo: Add processor code here` with the following code:
 
    ```csharp
    var tasks = new List<Task>();
 
-    foreach (var doc in input)
-    {
-        tasks.Add(destinationContainer.CreateItemAsync(doc, new PartitionKey(doc.BuyerState)));
-    }
+   foreach (var doc in input)
+   {
+       tasks.Add(destinationContainer.CreateItemAsync(doc, new PartitionKey(doc.BuyerState)));
+   }
 
-    return Task.WhenAll(tasks);
+   return Task.WhenAll(tasks);
    ```
 
 ### Test to Confirm the Change Feed Function Works
@@ -224,9 +225,11 @@ Now that we have our first Change Feed consumer, we're ready to run a test and c
 
 1. Open a **second** terminal window and navigate to the **ChangeFeedConsole** folder
 
-1. Start up your console app by running the following command in the **second** terminal window:
+1. Start up your console app by running the following commands in the **second** terminal window:
 
    ```sh
+   cd ChangeFeedConsole
+
    dotnet run
    ```
 
@@ -286,7 +289,7 @@ Azure Functions provide a quick and easy way to hook up with the Cosmos DB Chang
    node --version
    ```
 
-   > If you're using a version older than `8.5`, [download it here](https://docs.npmjs.com/getting-started/installing-node#osx-or-windows) or run the following:
+   > If you do not have node.js installed [download it here](https://docs.npmjs.com/getting-started/installing-node#osx-or-windows). If you are using a version older than `8.5` run the following:
 
    ```sh
    npm i -g node@latest
@@ -306,9 +309,13 @@ Azure Functions provide a quick and easy way to hook up with the Cosmos DB Chang
    func init ChangeFeedFunctions
    ```
 
-1. When prompted, choose the **dotnet** worker runtime
+1. When prompted, choose the **dotnet** worker runtime. Use the arrow keys to scroll up and down.
 
 1. Change directory to the `ChangeFeedFunctions` directory created in the previous step
+
+   ```sh
+   cd ChangeFeedFunctions
+   ```
 
 1. In your terminal pane, enter and execute the following command:
 
@@ -316,20 +323,31 @@ Azure Functions provide a quick and easy way to hook up with the Cosmos DB Chang
    func new
    ```
 
-1. When prompted, select **CosmosDBTrigger** from the list of templates
+1. When prompted, select **C#** from the list of languages. Use the arrow keys to scroll up and down.
+
+1. When prompted, select **CosmosDBTrigger** from the list of templates. Use the arrow keys to scroll up and down.
 
 1. When prompted, enter the name `MaterializedViewFunction` for the function
 
-1. In your terminal pane, enter and execute the following command:
+1. Open the **ChangeFeedFunctions.csproj** file and update the target framework to .NET Core 3.1
+
+    ```xml
+   <TargetFramework>netcoreapp3.1</TargetFramework>
+    ```
+
+1. In your terminal pane, enter and execute the following commands:
 
    ```sh
-   dotnet add package Microsoft.Azure.Cosmos --version 3.7.0
+   dotnet add package Microsoft.Azure.Cosmos
+   dotnet add package Microsoft.NET.Sdk.Functions --version 3.0.9
+   dotnet add package Microsoft.Azure.WebJobs.Extensions.CosmosDB --version 3.0.7
+   dotnet add ChangeFeedFunctions.csproj reference ..\\Shared\\Shared.csproj
    ```
 
-1. In your terminal pane, enter and execute the following command:
+1. In your terminal pane, build the project:
 
    ```sh
-   dotnet add ChangeFeedFunctions.csproj reference ..\\Shared\\Shared.csproj
+   dotnet build
    ```
 
 1. Your first Azure Function has now been created, in Visual Studio Code and note the new **ChangeFeedFunctions** folder, expand it and explore the **local.settings.json**, and the **MaterializedViewFunction.cs** files.
@@ -386,18 +404,18 @@ The Materialized View pattern is used to generate pre-populated views of data in
    ```csharp
    [FunctionName("MaterializedViewFunction")]
    public static void Run([CosmosDBTrigger(
-        databaseName: "StoreDatabase",
-        collectionName: "CartContainerByState",
-        ConnectionStringSetting = "DBConnection",
-        CreateLeaseCollectionIfNotExists = true,
-        LeaseCollectionName = "materializedViewLeases")]IReadOnlyList<Document> input, ILogger log)
-    {
-        if (input != null && input.Count > 0)
-        {
-            log.LogInformation("Documents modified " + input.Count);
-            log.LogInformation("First document Id " + input[0].Id);
-        }
-    }
+      databaseName: "StoreDatabase",
+      collectionName: "CartContainerByState",
+      ConnectionStringSetting = "DBConnection",
+      CreateLeaseCollectionIfNotExists = true,
+      LeaseCollectionName = "materializedViewLeases")]IReadOnlyList<Document> input, ILogger log)
+   {
+      if (input != null && input.Count > 0)
+      {
+         log.LogInformation("Documents modified " + input.Count);
+         log.LogInformation("First document Id " + input[0].Id);
+      }
+   }
    ```
 
 > The function works by polling your container on an interval and checking for changes since the last lease time. Each turn of the function may result in multiple documents that have changed, which is why the input is an IReadOnlyList of Documents.
@@ -416,19 +434,19 @@ The Materialized View pattern is used to generate pre-populated views of data in
 
    ```csharp
    [FunctionName("MaterializedViewFunction")]
-    public static async Task Run([CosmosDBTrigger(
-        databaseName: "StoreDatabase",
-        collectionName: "CartContainerByState",
-        ConnectionStringSetting = "DBConnection",
-        CreateLeaseCollectionIfNotExists = true,
-        LeaseCollectionName = "materializedViewLeases")]IReadOnlyList<Document> input, ILogger log)
-    {
-        if (input != null && input.Count > 0)
-        {
+      public static async Task Run([CosmosDBTrigger(
+         databaseName: "StoreDatabase",
+         collectionName: "CartContainerByState",
+         ConnectionStringSetting = "DBConnection",
+         CreateLeaseCollectionIfNotExists = true,
+         LeaseCollectionName = "materializedViewLeases")]IReadOnlyList<Document> input, ILogger log)
+      {
+         if (input != null && input.Count > 0)
+         {
             log.LogInformation("Documents modified " + input.Count);
             log.LogInformation("First document Id " + input[0].Id);
-        }
-    }
+         }
+      }
    ```
 
 1. Your target this time is the container called **StateSales**. Add the following lines to the top of the **MaterializedViewFunction** to setup the destination connection. Be sure to replace the endpoint url and the key.
@@ -438,7 +456,7 @@ The Materialized View pattern is used to generate pre-populated views of data in
     private static readonly string _primaryKey = "<your-primary-key>";
     private static readonly string _databaseId = "StoreDatabase";
     private static readonly string _containerId = "StateSales";
-    private static CosmosClient cosmosClient = new CosmosClient(_endpointUrl, _primaryKey);
+    private static CosmosClient _cosmosClient = new CosmosClient(_endpointUrl, _primaryKey);
    ```
 
 ### Add a new Class for StateSales Data
@@ -450,16 +468,16 @@ The Materialized View pattern is used to generate pre-populated views of data in
    ```csharp
    public class StateCount
    {
-       [JsonProperty("id")]
-       public string Id { get; set; }
-       public string State { get; set; }
-       public int Count { get; set; }
-       public double TotalSales { get; set; }
+      [JsonProperty("id")]
+      public string Id { get; set; }
+      public string State { get; set; }
+      public int Count { get; set; }
+      public double TotalSales { get; set; }
 
-       public StateCount()
-       {
-           Id = Guid.NewGuid().ToString();
-       }
+      public StateCount()
+      {
+         Id = Guid.NewGuid().ToString();
+      }
    }
    ```
 
@@ -472,44 +490,44 @@ The Azure Function receives a list of Documents that have changed. We want to or
 1. Locate the following section in the code for **MaterializedViewFunction.cs**
 
    ```csharp
-    if (input != null && input.Count > 0)
-    {
-        log.LogInformation("Documents modified " + input.Count);
-        log.LogInformation("First document Id " + input[0].Id);
-    }
+   if (input != null && input.Count > 0)
+   {
+      log.LogInformation("Documents modified " + input.Count);
+      log.LogInformation("First document Id " + input[0].Id);
+   }
    ```
 
 1. Replace the two logging lines with the following code:
 
    ```csharp
-    var stateDict = new Dictionary<string, List<double>>();
-    foreach (var doc in input)
-    {
-        var action = JsonConvert.DeserializeObject<CartAction>(doc.ToString());
+   var stateDict = new Dictionary<string, List<double>>();
+   foreach (var doc in input)
+   {
+      var action = JsonConvert.DeserializeObject<CartAction>(doc.ToString());
 
-        if (action.Action != ActionType.Purchased)
-        {
-            continue;
-        }
+      if (action.Action != ActionType.Purchased)
+      {
+         continue;
+      }
 
-        if (stateDict.ContainsKey(action.BuyerState))
-        {
-            stateDict[action.BuyerState].Add(action.Price);
-        }
-        else
-        {
-            stateDict.Add(action.BuyerState, new List<double> { action.Price });
-        }
-    }
+      if (stateDict.ContainsKey(action.BuyerState))
+      {
+         stateDict[action.BuyerState].Add(action.Price);
+      }
+      else
+      {
+         stateDict.Add(action.BuyerState, new List<double> { action.Price });
+      }
+   }
    ```
 
-1. Following the conclusion of this _foreach_ loop, add the typical code to connect to our destination container:
+1. Following the conclusion of this _foreach_ loop, add this code to connect to our destination container:
 
    ```csharp
-       var db = cosmosClient.GetDatabase(_databaseId);
-       var container = db.GetContainer(_containerId);
+      var database = _cosmosClient.GetDatabase(_databaseId);
+      var container = database.GetContainer(_containerId);
 
-       //todo - Next steps go here
+      //todo - Next steps go here
    ```
 
 1. Because we're dealing with an aggregate collection, we'll be either creating or updating a document for each entry in our dictionary. For starters, we need to check to see if the document we care about exists. Add the following code after the `todo` line above:
@@ -519,25 +537,25 @@ The Azure Function receives a list of Documents that have changed. We want to or
 
    foreach (var key in stateDict.Keys)
    {
-       var query = new QueryDefinition("select * from StateSales s where s.State = @state").WithParameter("@state", key);
+      var query = new QueryDefinition("select * from StateSales s where s.State = @state").WithParameter("@state", key);
 
-        var resultSet = container.GetItemQueryIterator<StateCount>(query, requestOptions: new QueryRequestOptions() { PartitionKey = new Microsoft.Azure.Cosmos.PartitionKey(key), MaxItemCount = 1 });
+      var resultSet = container.GetItemQueryIterator<StateCount>(query, requestOptions: new QueryRequestOptions() { PartitionKey = new Microsoft.Azure.Cosmos.PartitionKey(key), MaxItemCount = 1 });
 
-       while (resultSet.HasMoreResults)
-       {
-           var stateCount = (await resultSet.ReadNextAsync()).FirstOrDefault();
+      while (resultSet.HasMoreResults)
+      {
+         var stateCount = (await resultSet.ReadNextAsync()).FirstOrDefault();
 
-           if (stateCount == null)
-           {
-               //todo: Add new doc code here
-           }
-           else
-           {
-               //todo: Add existing doc code here
-           }
+         if (stateCount == null)
+         {
+            //todo: Add new doc code here
+         }
+         else
+         {
+            //todo: Add existing doc code here
+         }
 
-           //todo: Upsert document
-       }
+         //todo: Upsert document
+      }
    }
 
    await Task.WhenAll(tasks);
@@ -586,82 +604,82 @@ The Azure Function receives a list of Documents that have changed. We want to or
 
    namespace ChangeFeedFunctions
    {
-       public static class MaterializedViewFunction
-       {
-           private static readonly string _endpointUrl = "<your-endpoint-url>";
-           private static readonly string _primaryKey = "<primary-key>";
-           private static readonly string _databaseId = "StoreDatabase";
-           private static readonly string _containerId = "StateSales";
-           private static CosmosClient cosmosClient = new CosmosClient(_endpointUrl, _primaryKey);
+      public static class MaterializedViewFunction
+      {
+         private static readonly string _endpointUrl = "<your-endpoint-url>";
+         private static readonly string _primaryKey = "<primary-key>";
+         private static readonly string _databaseId = "StoreDatabase";
+         private static readonly string _containerId = "StateSales";
+         private static CosmosClient _cosmosClient = new CosmosClient(_endpointUrl, _primaryKey);
 
-           [FunctionName("MaterializedViewFunction")]
-           public static async Task Run([CosmosDBTrigger(
-               databaseName: "StoreDatabase",
-               collectionName: "CartContainerByState",
-               ConnectionStringSetting = "DBConnection",
-               CreateLeaseCollectionIfNotExists = true,
-               LeaseCollectionName = "materializedViewLeases")]IReadOnlyList<Document> input, ILogger log)
-           {
-               if (input != null && input.Count > 0)
+         [FunctionName("MaterializedViewFunction")]
+         public static async Task Run([CosmosDBTrigger(
+            databaseName: "StoreDatabase",
+            collectionName: "CartContainerByState",
+            ConnectionStringSetting = "DBConnection",
+            CreateLeaseCollectionIfNotExists = true,
+            LeaseCollectionName = "materializedViewLeases")]IReadOnlyList<Document> input, ILogger log)
+         {
+            if (input != null && input.Count > 0)
+            {
+               var stateDict = new Dictionary<string, List<double>>();
+
+               foreach (var doc in input)
                {
-                   var stateDict = new Dictionary<string, List<double>>();
+                  var action = JsonConvert.DeserializeObject<CartAction>(doc.ToString());
 
-                   foreach (var doc in input)
-                   {
-                       var action = JsonConvert.DeserializeObject<CartAction>(doc.ToString());
+                  if (action.Action != ActionType.Purchased)
+                  {
+                     continue;
+                  }
 
-                       if (action.Action != ActionType.Purchased)
-                       {
-                           continue;
-                       }
-
-                       if (stateDict.ContainsKey(action.BuyerState))
-                       {
-                           stateDict[action.BuyerState].Add(action.Price);
-                       }
-                       else
-                       {
-                           stateDict.Add(action.BuyerState, new List<double> { action.Price });
-                       }
-                   }
-
-                       var db = cosmosClient.GetDatabase(_databaseId);
-                       var container = db.GetContainer(_containerId);
-
-                       var tasks = new List<Task>();
-
-                       foreach (var key in stateDict.Keys)
-                       {
-                           var query = new QueryDefinition("select * from StateSales s where s.State = @state").WithParameter("@state", key);
-
-                            var resultSet = container.GetItemQueryIterator<StateCount>(query, requestOptions: new QueryRequestOptions() { PartitionKey = new Microsoft.Azure.Cosmos.PartitionKey(key), MaxItemCount = 1 });
-
-                           while (resultSet.HasMoreResults)
-                           {
-                               var stateCount = (await resultSet.ReadNextAsync()).FirstOrDefault();
-
-                               if (stateCount == null)
-                               {
-                                   stateCount = new StateCount();
-                                   stateCount.State = key;
-                                   stateCount.TotalSales = stateDict[key].Sum();
-                                   stateCount.Count = stateDict[key].Count;
-                               }
-                               else
-                               {
-                                   stateCount.TotalSales += stateDict[key].Sum();
-                                   stateCount.Count += stateDict[key].Count;
-                               }
-
-                               log.LogInformation("Upserting materialized view document");
-                               tasks.Add(container.UpsertItemAsync(stateCount, new Microsoft.Azure.Cosmos.PartitionKey(stateCount.State)));
-                           }
-                       }
-
-                       await Task.WhenAll(tasks);
+                  if (stateDict.ContainsKey(action.BuyerState))
+                  {
+                     stateDict[action.BuyerState].Add(action.Price);
+                  }
+                  else
+                  {
+                     stateDict.Add(action.BuyerState, new List<double> { action.Price });
+                  }
                }
-           }
-       }
+
+               var database = _cosmosClient.GetDatabase(_databaseId);
+               var container = database.GetContainer(_containerId);
+
+               var tasks = new List<Task>();
+
+               foreach (var key in stateDict.Keys)
+               {
+                  var query = new QueryDefinition("select * from StateSales s where s.State = @state").WithParameter("@state", key);
+
+                  var resultSet = container.GetItemQueryIterator<StateCount>(query, requestOptions: new QueryRequestOptions() { PartitionKey = new Microsoft.Azure.Cosmos.PartitionKey(key), MaxItemCount = 1 });
+
+                  while (resultSet.HasMoreResults)
+                  {
+                     var stateCount = (await resultSet.ReadNextAsync()).FirstOrDefault();
+
+                     if (stateCount == null)
+                     {
+                        stateCount = new StateCount();
+                        stateCount.State = key;
+                        stateCount.TotalSales = stateDict[key].Sum();
+                        stateCount.Count = stateDict[key].Count;
+                     }
+                     else
+                     {
+                        stateCount.TotalSales += stateDict[key].Sum();
+                        stateCount.Count += stateDict[key].Count;
+                     }
+
+                     log.LogInformation("Upserting materialized view document");
+                     tasks.Add(container.UpsertItemAsync(stateCount, new Microsoft.Azure.Cosmos.PartitionKey(stateCount.State)));
+                  }
+               }
+
+               await Task.WhenAll(tasks);
+            }
+         }
+      }
    }
    ```
 
@@ -737,7 +755,7 @@ This step is optional, if you do not wish to follow the lab to creating the dash
 
    ![The lab resource group is highlighted](../media/08-cosmos-in-resources.jpg "Select your lab resource group")
 
-1. In the **cosmoslabs** resource blade, and select the Event Hub account you just created
+1. In the **cosmoslabs** resource blade, and select the Event Hub namespace.
 
    ![The lab Event Hub is highlighted](../media/08-cosmos-select-hub.jpg "Select the lab Event Hub resource")
 
@@ -773,7 +791,7 @@ This step is optional, if you do not wish to connect to Power BI to visualize yo
 
    - Set _Output alias_ to `averagePriceOutput`
 
-   - Set _Group workspace_ to `cosmosdb`
+   - Set _Group workspace_ to `CosmosDB` or whatever name you used when you created a new workspace in Power BI
 
    - Set _Dataset name_ to `averagePrice`
 
@@ -827,7 +845,7 @@ This step is optional, if you do not wish to connect to Power BI to visualize yo
 
    - Select **Save**
 
-1.  Once you've completed these steps, the **Outputs** blade should look like this:
+1. Once you've completed these steps, the **Outputs** blade should look like this:
 
    ![The Outputs Blade is displayed with four outputs](../media/08-outputs-blade.jpg "You should see four outputs now")
 
@@ -850,7 +868,7 @@ With all of the configuration out of the way, you'll see how simple it is to wri
 1. Add the [Microsoft Azure Event Hubs](https://www.nuget.org/packages/Microsoft.Azure.EventHubs/) NuGet Package by entering and executing the following:
 
    ```sh
-   dotnet add package Microsoft.Azure.EventHubs --version 4.1.0
+   dotnet add package Microsoft.Azure.EventHubs --version 4.3.0
    ```
 
 1. Select new **AnalyticsFunction.cs** file to open it in the editor
@@ -917,9 +935,9 @@ With all of the configuration out of the way, you'll see how simple it is to wri
    private static readonly string _eventHubName = "carteventhub";
    ```
 
-1.  Replace the placeholder in **\_eventHubConnection** with the value of the Event Hubs **Connection string-primary key** you collected earlier.
+1. Replace the placeholder in **\_eventHubConnection** with the value of the Event Hubs **Connection string-primary key** you collected earlier.
 
-1.  Start by creating an **EventHubClient** by replacing the two logging lines with the following code:
+1. Start by creating an **EventHubClient** by replacing the two logging lines with the following code:
 
    ```csharp
    var sbEventHubConnection = new EventHubsConnectionStringBuilder(_eventHubConnection){
@@ -1037,6 +1055,9 @@ With all of the configuration out of the way, you'll see how simple it is to wri
 1. Confirm the data generator is running and that the Azure Functions and Console Change Processor are firing before proceeding to the next steps
 
 1. Return to the **CartStreamProcessor** overview screen and select the **Start** button at the top to start the processor. When prompted choose to start the output **now**. Starting the processor may take several minutes.
+
+> [!TIP]
+> If the Stream Analytics Job fails to start it may be due to a bad connection to Event Hubs. To correct this to go **Inputs** in the Stream Analytics Job, then note the Service Bus namespace and Event Hub name, then delete the `cartInput` connection to the Event Hub and recreate it.
 
    ![The start link is highlighted](../media/08-start-processor.jpg "Start the stream analytics job")
 
