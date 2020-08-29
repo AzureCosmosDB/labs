@@ -11,17 +11,18 @@ public class Program
     private static readonly string _primaryKey = "";
 
     private static readonly string _databaseId = "FinancialDatabase";
-    private static readonly string _peopleCollectionId = "PeopleCollection";
-    private static readonly string _transactionCollectionId = "TransactionCollection";
+    private static readonly string _peopleContainerId = "PeopleCollection";
+    private static readonly string _transactionContainerId = "TransactionCollection";
+
+    private static CosmosClient _client = new CosmosClient(_endpointUri, _primaryKey);
 
     public static async Task Main(string[] args)
     {
-        using CosmosClient client = new CosmosClient(_endpointUri, _primaryKey);
         
-        Database database = client.GetDatabase(_databaseId);
-        Container peopleContainer = database.GetContainer(_peopleCollectionId);
-        Container transactionContainer = database.GetContainer(_transactionCollectionId);
+        Database database = _client.GetDatabase(_databaseId);
+        Container peopleContainer = database.GetContainer(_peopleContainerId);
+        Container transactionContainer = database.GetContainer(_transactionContainerId);
 
-        
+
     }
 }
