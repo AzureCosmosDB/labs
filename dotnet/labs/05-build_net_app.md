@@ -35,11 +35,11 @@ After using the Azure Portal's **Data Explorer** to query an Azure Cosmos DB con
 
    > This command will build the project.
 
-7. In the **Explorer** pane verify that you have a **DataTypes.cs** file in your project folder.
+7. In the **Explorer** pane verify that you have a `DataTypes.cs` file in your project folder.
 
    > This file contains the data classes you will be working with in the following steps.
 
-8. Select the **Program.cs** link in the **Explorer** pane to open the file in the editor.
+8. Select the `Program.cs` link in the **Explorer** pane to open the file in the editor.
 
    ![Visual Studio Code editor is displayed with the program.cs file highlighted](../media/03-program_editor.jpg "Open the program.cs file")
 
@@ -61,16 +61,14 @@ After using the Azure Portal's **Data Explorer** to query an Azure Cosmos DB con
 
 ReadItemAsync allows a single item to be retrieved from Cosmos DB by its ID. In Azure Cosmos DB, this is the most efficient method of reading a single document.
 
-1. Locate the following code within the **Main** method:
+1. Locate the following code within the `Main()` method:
 
     ```csharp
-    _client = new CosmosClient(_endpointUri, _primaryKey);
-
     Database database = _client.GetDatabase(_databaseId);
     Container container = database.GetContainer(_containerId);
     ```
 
-1. Add the following lines of code to use the **ReadItemAsync** function to retrieve a single item from your Cosmos DB by its `id` and write its description to the console.
+1. Add the following lines of code to use the `ReadItemAsync()` function to retrieve a single item from your Cosmos DB by its `id` and write its description to the console.
 
     ```csharp
     ItemResponse<Food> candyResponse = await container.ReadItemAsync<Food>("19130", new PartitionKey("Sweets"));
@@ -80,15 +78,13 @@ ReadItemAsync allows a single item to be retrieved from Cosmos DB by its ID. In 
 
 1. Save all of your open tabs in Visual Studio Code
 
-1. Return to your terminal pane
-
 1. In the open terminal pane, enter and execute the following command:
 
    ```sh
    dotnet run
    ```
 
-1. You should see the following line output in the console, indicating that **ReadItemAsync** completed successfully:
+1. You should see the following line output in the console, indicating that `ReadItemAsync()` completed successfully:
 
    ```sh
    Read Candies, HERSHEY''S POT OF GOLD Almond Bar
@@ -129,8 +125,6 @@ ReadItemAsync allows a single item to be retrieved from Cosmos DB by its ID. In 
 
 1. Save all of your open tabs in Visual Studio Code
 
-1. Return to your terminal pane
-
 1. In the open terminal pane, enter and execute the following command:
 
     ```sh
@@ -165,7 +159,7 @@ ReadItemAsync allows a single item to be retrieved from Cosmos DB by its ID. In 
     FeedIterator<Food> queryB = container.GetItemQueryIterator<Food>(sqlB, requestOptions: new QueryRequestOptions{MaxConcurrency = 5, MaxItemCount = 100});
     ```
 
-    > Take note of the differences in this call to **GetItemQueryIterator** as compared to the previous section. **MaxConcurrency** is set to `5`. MaxConcurrency Sets the maximum number of simultaneous network connections to the container's partitions. If you set this property to -1, the SDK manages the degree of parallelism. If the MaxConcurrency set to 0, there is a single network connection to the container's partitions. MaxItemCount trades query latency versus client-side memory utilization. If this option is omitted or to set to -1, the SDK manages the number of items buffered during parallel query execution. We are limiting the **MaxItemCount** to `100` items. This will result in paging if there are more than 100 items that match the query.
+    > Take note of the differences in this call to `GetItemQueryIterator()` as compared to the previous section. **MaxConcurrency** is set to `5`. MaxConcurrency Sets the maximum number of simultaneous network connections to the container's partitions. If you set this property to -1, the SDK manages the degree of parallelism. If the MaxConcurrency set to 0, there is a single network connection to the container's partitions. MaxItemCount trades query latency versus client-side memory utilization. If this option is omitted or to set to -1, the SDK manages the number of items buffered during parallel query execution. We are limiting the **MaxItemCount** to `100` items. This will result in paging if there are more than 100 items that match the query.
 
 4. Add the following lines of code to page through the results of this query using a while loop.
 

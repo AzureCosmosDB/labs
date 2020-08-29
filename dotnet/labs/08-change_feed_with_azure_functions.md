@@ -16,7 +16,7 @@ In order to simulate data flowing into our store, in the form of actions on an e
 
 1. In the explorer pane on the left, locate the **DataGenerator** folder and expand it.
 
-1. Select the **Program.cs** link in the **Explorer** pane to open the file in the editor.
+1. Select the `program.cs` link in the **Explorer** pane to open the file in the editor.
 
    ![The program.cs is displayed](../media/08-console-main-default.jpg "Open the program.cs file")
 
@@ -38,13 +38,13 @@ In order to simulate data flowing into our store, in the form of actions on an e
 
 The key functionality of the console application is to add documents to our Cosmos DB to simulate activity on our e-commerce website. Here, you'll create a data definition for these documents and define a function to add them
 
-1. Within the **program.cs** file in the **DataGenerator** folder, locate the **AddItem** method. The purpose of this method is to add an instance of **CartAction** to our CosmosDB Container.
+1. Within the `program.cs` file in the **DataGenerator** folder, locate the `AddItem()` method. The purpose of this method is to add an instance of **CartAction** to our CosmosDB Container.
 
    > If you'd like to review how to add documents to a CosmosDB container, [refer to Lab 01 ](01-creating_partitioned_collection.md).
 
 ### Create a Function to Generate Random Shopping Data
 
-1. Within the **Program.cs** file in the **DataGenerator** folder, locate the **GenerateActions** method. The purpose of this method is to create randomized **CartAction** objects that you'll consume using the CosmosDB change feed.
+1. Within the `Program.cs` file in the **DataGenerator** folder, locate the `GenerateActions()` method. The purpose of this method is to create randomized **CartAction** objects that you'll consume using the CosmosDB change feed.
 
 ### Run the Console App and Verify Functionality
 
@@ -87,11 +87,11 @@ The first use case we'll explore for Cosmos DB Change Feed is Live Migration. A 
 
 1. Switch back to Visual Studio Code
 
-2. Select the **Program.cs** link under the **ChangeFeedConsole** folder in the **Explorer** pane to open the file in the editor.
+2. Select the `Program.cs` link under the **ChangeFeedConsole** folder in the **Explorer** pane to open the file in the editor.
 
 3. For the `_endpointUrl` variable, replace the placeholder value with the **URI** value and for the `_primaryKey` variable, replace the placeholder value with the **PRIMARY KEY** value from your Azure Cosmos DB account.
 
-4. Notice the container configuration value at the top of the **Program.cs** file, for the name of the destination container, following `_containerId`:
+4. Notice the container configuration value at the top of the `program.cs` file, for the name of the destination container, following `_containerId`:
 
    ```csharp
    private static readonly string _destinationContainerId = "CartContainerByState";
@@ -136,7 +136,7 @@ The first use case we'll explore for Cosmos DB Change Feed is Live Migration. A 
    await processor.StopAsync();
    ```
 
-9. At this point, your **Program.cs** file should look like this:
+9. At this point, your `Program.cs` file should look like this:
 
    ```csharp
    using System;
@@ -154,12 +154,12 @@ The first use case we'll explore for Cosmos DB Change Feed is Live Migration. A 
            private static readonly string _databaseId = "StoreDatabase";
            private static readonly string _containerId = "CartContainer";
            private static readonly string _destinationContainerId = "CartContainerByState";
-           private static CosmosClient _cosmosClient = new CosmosClient(_endpointUrl, _primaryKey);
+           private static CosmosClient _client = new CosmosClient(_endpointUrl, _primaryKey);
 
            static async Task Main(string[] args)
            {
 
-               Database database = cosmosClient.GetDatabase(_databaseId);
+               Database database = _client.GetDatabase(_databaseId);
                Container container = db.GetContainer(_containerId);
                Container destinationContainer = db.GetContainer(_destinationContainerId);
 
@@ -193,7 +193,7 @@ The first use case we'll explore for Cosmos DB Change Feed is Live Migration. A 
 
 ### Complete the Live Data Migration
 
-1. Within the **program.cs** file in the **ChangeFeedConsole** folder, locate the todo we left ourselves `//todo: Add processor code here`
+1. Within the `program.cs` file in the **ChangeFeedConsole** folder, locate the todo we left ourselves `//todo: Add processor code here`
 
 1. Modify the signature of the `Func<T>` in the `GetChangeFeedProcessorBuilder` replacing `object` with `CartAction` as follows:
 
@@ -213,7 +213,7 @@ The first use case we'll explore for Cosmos DB Change Feed is Live Migration. A 
 
    foreach (var doc in input)
    {
-       tasks.Add(destinationContainer.CreateItemAsync(doc, new PartitionKey(doc.BuyerState)));
+      tasks.Add(destinationContainer.CreateItemAsync(doc, new PartitionKey(doc.BuyerState)));
    }
 
    return Task.WhenAll(tasks);
@@ -360,7 +360,7 @@ The Materialized View pattern is used to generate pre-populated views of data in
 
 1. Locate the **local.settings.json** file and select it to open it in the editor.
 
-1. Add a new value **DBConnection** using the **Primary Connection String** parameter from your Cosmos DB account collected earlier in this lab. The **local.settings.json** file should like this:
+1. Add a new value `DBConnection` using the **Primary Connection String** parameter from your Cosmos DB account collected earlier in this lab. The **local.settings.json** file should like this:
 
    ```json
    {
@@ -373,7 +373,7 @@ The Materialized View pattern is used to generate pre-populated views of data in
    }
    ```
 
-1. Select the new **MaterializedViewFunction.cs** file to open it in the editor.
+1. Select the new `MaterializedViewFunction.cs` file to open it in the editor.
 
    > The **databaseName**, **collectionName** and **ConnectionStringSetting** refer to the source Cosmos DB account that the function is listening for changes on.
 
@@ -420,7 +420,7 @@ The Materialized View pattern is used to generate pre-populated views of data in
 
 > The function works by polling your container on an interval and checking for changes since the last lease time. Each turn of the function may result in multiple documents that have changed, which is why the input is an IReadOnlyList of Documents.
 
-1. Add the following using statements to the top of the **MaterializedViewFunction.cs** file:
+1. Add the following using statements to the top of the `MaterializedViewFunction.cs` file:
 
    ```csharp
    using System.Threading.Tasks;
@@ -456,12 +456,12 @@ The Materialized View pattern is used to generate pre-populated views of data in
     private static readonly string _primaryKey = "<your-primary-key>";
     private static readonly string _databaseId = "StoreDatabase";
     private static readonly string _containerId = "StateSales";
-    private static CosmosClient _cosmosClient = new CosmosClient(_endpointUrl, _primaryKey);
+    private static CosmosClient _client = new CosmosClient(_endpointUrl, _primaryKey);
    ```
 
 ### Add a new Class for StateSales Data
 
-1. Open **DataModel.cs** within the **Shared** folder in the editor
+1. Open `DataModel.cs` within the **Shared** folder in the editor
 
 1. Following the definition of the **CartAction** class, add a new class as follows:
 
@@ -524,7 +524,7 @@ The Azure Function receives a list of Documents that have changed. We want to or
 1. Following the conclusion of this _foreach_ loop, add this code to connect to our destination container:
 
    ```csharp
-      var database = _cosmosClient.GetDatabase(_databaseId);
+      var database = _client.GetDatabase(_databaseId);
       var container = database.GetContainer(_containerId);
 
       //todo - Next steps go here
@@ -610,7 +610,7 @@ The Azure Function receives a list of Documents that have changed. We want to or
          private static readonly string _primaryKey = "<primary-key>";
          private static readonly string _databaseId = "StoreDatabase";
          private static readonly string _containerId = "StateSales";
-         private static CosmosClient _cosmosClient = new CosmosClient(_endpointUrl, _primaryKey);
+         private static CosmosClient _client = new CosmosClient(_endpointUrl, _primaryKey);
 
          [FunctionName("MaterializedViewFunction")]
          public static async Task Run([CosmosDBTrigger(
@@ -643,7 +643,7 @@ The Azure Function receives a list of Documents that have changed. We want to or
                   }
                }
 
-               var database = _cosmosClient.GetDatabase(_databaseId);
+               var database = _client.GetDatabase(_databaseId);
                var container = database.GetContainer(_containerId);
 
                var tasks = new List<Task>();
