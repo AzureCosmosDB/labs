@@ -38,13 +38,21 @@ The SQL API supports optimistic concurrency control (OCC) through HTTP entity ta
 
 1. Select the **Program.cs** link in the **Explorer** pane to open the file in the editor.
 
-   ![The program.cs file is displayed](../media/10-program_editor.jpg "Open the program.cs file")
+   ![The program.cs file is displayed](../media/10-program-editor.jpg "Open the program.cs file")
 
 1. For the `_endpointUri` variable, replace the placeholder value with the **URI** value and for the `_primaryKey` variable, replace the placeholder value with the **PRIMARY KEY** value from your Azure Cosmos DB account. Use [these instructions](00-account_setup.md) to get these values if you do not already have them:
 
-   - For example, if your **uri** is `https://cosmosacct.documents.azure.com:443/`, your new variable assignment will look like this: `private static readonly string _endpointUri = "https://cosmosacct.documents.azure.com:443/";`.
+   - For example, if your **uri** is `https://cosmosacct.documents.azure.com:443/`, your new variable assignment will look like this: 
 
-   - For example, if your **primary key** is `elzirrKCnXlacvh1CRAnQdYVbVLspmYHQyYrhx0PltHi8wn5lHVHFnd1Xm3ad5cn4TUcH4U0MSeHsVykkFPHpQ==`, your new variable assignment will look like this: `private static readonly string _primaryKey = "elzirrKCnXlacvh1CRAnQdYVbVLspmYHQyYrhx0PltHi8wn5lHVHFnd1Xm3ad5cn4TUcH4U0MSeHsVykkFPHpQ==";`.
+    ```csharp
+    private static readonly string _endpointUri = "https://cosmosacct.documents.azure.com:443/";
+    ````
+
+   - For example, if your **primary key** is `elzirrKCnXlacvh1CRAnQdYVbVLspmYHQyYrhx0PltHi8wn5lHVHFnd1Xm3ad5cn4TUcH4U0MSeHsVykkFPHpQ==`, your new variable assignment will look like this:
+
+   ```csharp
+   private static readonly string _primaryKey = "elzirrKCnXlacvh1CRAnQdYVbVLspmYHQyYrhx0PltHi8wn5lHVHFnd1Xm3ad5cn4TUcH4U0MSeHsVykkFPHpQ==";
+   ```
 
 1. Save all of your open editor tabs.
 
@@ -58,13 +66,15 @@ The SQL API supports optimistic concurrency control (OCC) through HTTP entity ta
 
 1. Select the **Program.cs** link in the **Explorer** pane to open the file in the editor.
 
-1. Locate the `using` block within the `Main` method:
+1. Locate the `Main` method:
 
    ```csharp
-   using (CosmosClient client = new CosmosClient(_endpointUri, _primaryKey))
-   {
+   public static async Task Main(string[] args)
+    {
+        Database database = _client.GetDatabase(_databaseId);
+        Container container = database.GetContainer(_containerId);
 
-   }
+    }
    ```
 
 1. Add the following code to asynchronously read a single item from the container, identified by its partition key and id:
@@ -101,14 +111,6 @@ The SQL API supports optimistic concurrency control (OCC) through HTTP entity ta
 
    > The ETag should remain unchanged since the item has not been changed.
 
-1. Locate the `using` block within the `Main` method:
-
-   ```csharp
-   using (CosmosClient client = new CosmosClient(_endpointUri, _primaryKey))
-   {
-   }
-   ```
-
 1. Within the `Main` method, locate the following line of code:
 
    ```csharp
@@ -121,7 +123,7 @@ The SQL API supports optimistic concurrency control (OCC) through HTTP entity ta
    await Console.Out.WriteLineAsync($"Existing ETag:\t{response.ETag}");
    ```
 
-1. Within the `using` block, add a new line of code to create an **ItemRequestOptions** instance that will use the **ETag** from the item and specify an **If-Match** header:
+1. Next, add a new line of code to create an **ItemRequestOptions** instance that will use the **ETag** from the item and specify an **If-Match** header:
 
    ```csharp
    ItemRequestOptions requestOptions = new ItemRequestOptions { IfMatchEtag = response.ETag };
@@ -152,19 +154,18 @@ The SQL API supports optimistic concurrency control (OCC) through HTTP entity ta
    ```csharp
    public static async Task Main(string[] args)
    {
-       using (CosmosClient client = new CosmosClient(_endpointUri, _primaryKey))
-       {
-           var database = client.GetDatabase(_databaseId);
-           var container = database.GetContainer(_containerId);
+      Database database = _client.GetDatabase(_databaseId);
+      Container container = database.GetContainer(_containerId);
 
-           ItemResponse<Food> response = await container.ReadItemAsync<Food>("21083", new PartitionKey("Fast Foods"));
-           await Console.Out.WriteLineAsync($"Existing ETag:\t{response.ETag}");
+      ItemResponse<Food> response = await container.ReadItemAsync<Food>("21083", new PartitionKey("Fast Foods"));
+      await Console.Out.WriteLineAsync($"Existing ETag:\t{response.ETag}");
 
-           ItemRequestOptions requestOptions = new ItemRequestOptions { IfMatchEtag = response.ETag };
-           response.Resource.tags.Add(new Tag { name = "Demo" });
-           response = await container.UpsertItemAsync(response.Resource, requestOptions: requestOptions);
-           await Console.Out.WriteLineAsync($"New ETag:\t{response.ETag}");
-       }
+      ItemRequestOptions requestOptions = new ItemRequestOptions { IfMatchEtag = response.ETag };
+      response.Resource.tags.Add(new Tag { name = "Demo" });
+
+      response = await container.UpsertItemAsync(response.Resource, requestOptions: requestOptions);
+      await Console.Out.WriteLineAsync($"New ETag:\t{response.ETag}");
+
    }
    ```
 
@@ -180,15 +181,7 @@ The SQL API supports optimistic concurrency control (OCC) through HTTP entity ta
 
    > You should see that the value of the ETag property has changed. The **ItemRequestOptions** class helped us implement optimistic concurrency by specifying that we wanted the SDK to use the If-Match header to allow the server to decide whether a resource should be updated. The If-Match value is the ETag value to be checked against. If the ETag value matches the server ETag value, the resource is updated. If the ETag is no longer current, the server rejects the operation with an "HTTP 412 Precondition failure" response code. The client then re-fetches the resource to acquire the current ETag value for the resource.
 
-1. Locate the `using` block within the `Main` method:
-
-   ```csharp
-   using (CosmosClient client = new CosmosClient(_endpointUri, _primaryKey))
-   {
-   }
-   ```
-
-1. Within the `using` block, add a new line of code to again update a property of the item:
+1. Back in the `Main` method, add a new line of code to again update a property of the item:
 
    ```csharp
    response.Resource.tags.Add(new Tag { name = "Failure" });
@@ -207,11 +200,11 @@ The SQL API supports optimistic concurrency control (OCC) through HTTP entity ta
    ```csharp
    try
    {
-       response = await container.UpsertItemAsync(response.Resource, requestOptions: requestOptions);
+      response = await container.UpsertItemAsync(response.Resource, requestOptions: requestOptions);
    }
    catch (Exception ex)
    {
-       await Console.Out.WriteLineAsync($"Update error:\t{ex.Message}");
+      await Console.Out.WriteLineAsync($"Update error:\t{ex.Message}");
    }
    ```
 
@@ -226,11 +219,5 @@ The SQL API supports optimistic concurrency control (OCC) through HTTP entity ta
 1. Observe the output of the console application.
 
    > You should see that the second update call fails because value of the ETag property has changed. The **ItemRequestOptions** class specifying the original ETag value as an If-Match header caused the server to decide to reject the update operation with an "HTTP 412 Precondition failure" response code.
-
-1. Close all open editor tabs.
-
-1. Close the Visual Studio Code application.
-
-1. Close your browser application.
 
 > If this is your final lab, follow the steps in [Removing Lab Assets](11-cleaning_up.md) to remove all lab resources.
