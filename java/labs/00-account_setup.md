@@ -62,9 +62,9 @@
 
 1. Once you have logged in, you may be prompted to start a tour of the Azure portal. You can safely skip this step.
 
-> The .NET SDK requires credentials to connect to your Azure Cosmos DB account. You will collect and store these credentials for use throughout the lab.
-
 ### Retrieve Account Credentials
+
+> The Java SDK requires credentials to connect to your Azure Cosmos DB account. You will collect and store these credentials for use throughout the lab.
 
 1. On the left side of the portal, click the **Resource groups** link.
 
