@@ -122,7 +122,7 @@ You do not need to do Steps 1-4 in this section and can proceed to Step 4 by ope
 
     !["The linked service configuration dialog is displayed"](../media/03-adf_selecttargetdb.jpg "Select the ImportDatabase database")
 
-18. Select your newly created **targetcosmosdb** connection as the Destination date store.
+18. Select your newly created **targetcosmosdb** connection as the Destination data store.
 
     !["The destination data source dialog is displayed"](../media/03-adf_destconnectionnext.jpg "Select your recently created data source")
 
