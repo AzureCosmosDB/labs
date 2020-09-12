@@ -9,7 +9,7 @@ In this lab, you will setup your Azure subscription with the required resources 
 
 ## Lab Content Setup
 
-1. To begin setup, Git clone or download the repo containing these instructions from [Github](https://github.com/CosmosDB/labs).
+1. To begin setup, Git clone or download the repo containing these instructions from [Github](https://github.com/AzureCosmosDB/labs).
 
 2. Open Windows Powershell
 3. Navigate to the folder containing your downloaded copy of the repo
@@ -50,14 +50,14 @@ In this lab, you will setup your Azure subscription with the required resources 
 8. To create the Azure resources for the labs run the labSetup.ps1 script:
 
    ```powershell
-   .\labSetup.ps1
+   .\labSetup.ps1 -resourceGroupName 'name'
    ```
+
+   and please choose a `name` which is likely to be unique i.e. `cosmoslabsXXXXX` where `XXXXX` are some random digits.
 
    - This script creates resources in the _West US_ region by default. To use another region add **-location 'region name'** to the above command.
 
-   - By default this script uses _cosmoslabs_ as the name of the resource group. You can use another name by adding **-resourceGroupName 'name'** to the above command
-
-   - This script will fail if the specified resource group already exists. To bypass this failure and create the resources anyway, add **-overwriteGroup** to the above command.
+   - This script will fail if the specified resource group already exists, you may want to choose another `name` value. Alternatively to bypass this failure and create the resources anyway, add **-overwriteGroup** to the above command.
 
 9. Some Azure resources can take 10 minutes or more to complete setup so expect the script to run for a while before completing. After the script completes, your account should contain a **cosmoslabs** resource group with several pre-configured resources:
 
