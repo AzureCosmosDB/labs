@@ -4,7 +4,7 @@
 
 > Before you start these labs, you will need to create an Azure Cosmos DB account that you will use throughout the labs.
 
-1. To begin setup, Git clone or download the repo containing these instructions from [Github](https://github.com/CosmosDB/labs).
+1. To begin setup, Git clone or download the repo containing these instructions from [Github](https://github.com/AzureCosmosDB/labs).
 
    > To automatically set up the resources needed for each lab, you will need to run Powershell scripts for Azure resource setup and to create local code files. Azure setup uses the Azure Powershell module. If you do not already have it installed, go to <https://docs.microsoft.com/en-us/powershell/azure/install-az-ps> for setup instructions before continuing.
 
@@ -45,14 +45,14 @@
 1. To create the Azure resources for the labs run the labSetup.ps1 script:
 
    ```powershell
-   .\labSetup.ps1
+   .\labSetup.ps1 -resourceGroupName 'name'
    ```
 
-   > This script creates resources in the _West US_ region by default. To use another region add **-location 'region name'** to the above command.
+   and please choose a `name` which is likely to be unique i.e. `cosmoslabsXXXXX` where `XXXXX` are some random digits.
 
-   > By default this script uses _cosmoslabs_ as the name of the resource group. You can use another name by adding **-resourceGroupName 'name'** to the above command
+   - This script creates resources in the _West US_ region by default. To use another region add **-location 'region name'** to the above command.
 
-   > This script will fail if the specified resource group already exists. To bypass this failure and create the resources anyway, add **-overwriteGroup** to the above command.
+   - This script will fail if the specified resource group already exists, you may want to choose another `name` value. Alternatively to bypass this failure and create the resources anyway, add **-overwriteGroup** to the above command.
 
 1. Some Azure resources can take 10 minutes or more to complete setup so expect the script to run for a while before completing. After the script completes, your account should contain a **cosmoslabs** resource group with pre-configured resources.
 
@@ -62,7 +62,7 @@
 
 1. Once you have logged in, you may be prompted to start a tour of the Azure portal. You can safely skip this step.
 
-> The .NET SDK requires credentials to connect to your Azure Cosmos DB account. You will collect and store these credentials for use throughout the lab.
+> The Java SDK requires credentials to connect to your Azure Cosmos DB account. You will collect and store these credentials for use throughout the lab.
 
 ### Retrieve Account Credentials
 
