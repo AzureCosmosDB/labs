@@ -1,9 +1,5 @@
 # Workshop PowerPoint Deck
 
-
-
-
-
 **Two Day Suggested Schedule**
 
 - [Sample Schedule](./decks/CosmosDBWorkshopSchedule2019.docx)
@@ -29,7 +25,11 @@
 
 In addition to the above workshop decks, we have hands-on labs. We have labs available for our .NET sdk and Java sdk below:
 
-# .NET (V3) Labs
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+# Core (SQL) API
+
+## .NET (V3) Labs
 
 **.NET Lab Prerequisites**
 
@@ -75,7 +75,7 @@ Prior to starting these labs, you must have the following operating system and s
 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-# Java Labs
+## Java Labs
 
 **Java Lab Prerequisites**
 
@@ -124,6 +124,16 @@ Java 8 JRE (or greater) | [/jre8-downloads](https://www.oracle.com/technetwork/j
 1. When installing the Java 11 SDK or higher, this is bundled with a Java Runtime Environment (JRE). Make sure the JRE path (e.g: C:\Program Files\Java\jdk-11.0.2\bin\) is present at the top of your Path variable in System variables. 
 2. If you already have Java installed on your local machine, you should check the version of your Java Runtime Environment (JRE) installation using the ``java -version`` command.
 2. If using a version of Java greater than version 8, some projects may not compile (for example the benchmarking application).
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+# Gremlin API
+
+**Workshop Decks**
+
+- [Introduction](./decks/Gremlin/GraphWorkshop_1_Introduction.pptx)
+- [Graph Modeling](./decks/Gremlin/GraphWorkshop_2_GraphModeling.pptx)
+- [Design Principles](./decks/Gremlin/GraphWorkshop_3_GraphDesignPrinciples.pptx)
 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
