@@ -301,7 +301,7 @@ You will use **Azure Data Factory (ADF)** to import the JSON array stored in the
 
 ### Use Built-In Functions
 
-*There are a large variety of built-in functions available in the SQL query syntax for the SQL API in Azure Cosmos DB. We will focus on a single function in this task but you can learn more about the others here: [https://docs.microsoft.com/azure/cosmos-db/sql-api-sql-query-reference](https://docs.microsoft.com/azure/cosmos-db/sql-api-sql-query-reference#bk_built_in_functions)*
+*There are a large variety of built-in functions available in the SQL query syntax for the SQL API in Azure Cosmos DB. We will focus on a single function in this task but you can learn more about the others here: [https://docs.microsoft.com/azure/cosmos-db/sql-query-system-functions](https://docs.microsoft.com/azure/cosmos-db/sql-query-system-functions)*
 
 1. In the *query editor*, replace the current query with the following query:
 
