@@ -1,0 +1,296 @@
+{
+   "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+   "contentVersion": "1.0.0.0",
+   "parameters": {
+      "accountName": {
+         "type": "string",
+         "defaultValue": "cassandra",
+         "metadata": {
+            "description": "Cosmos DB account name, max length 44 characters"
+         }
+      },
+      "location": {
+         "type": "string",
+         "defaultValue": "East US",
+         "metadata": {
+            "description": "Location for the Cosmos DB account."
+         }
+      },
+      "primaryRegion": {
+         "type": "string",
+         "defaultValue": "East US",
+         "metadata": {
+            "description": "The primary replica region for the Cosmos DB account."
+         }
+      },
+      "secondaryRegion": {
+         "type": "string",
+         "defaultValue": "East US 2",
+         "metadata": {
+            "description": "The secondary replica region for the Cosmos DB account."
+         }
+      },
+      "defaultConsistencyLevel": {
+         "type": "string",
+         "defaultValue": "Session",
+         "allowedValues": [
+            "Eventual",
+            "ConsistentPrefix",
+            "Session",
+            "BoundedStaleness",
+            "Strong"
+         ],
+         "metadata": {
+            "description": "The default consistency level of the Cosmos DB account."
+         }
+      },
+      "maxStalenessPrefix": {
+         "type": "int",
+         "defaultValue": 100000,
+         "minValue": 10,
+         "maxValue": 1000000,
+         "metadata": {
+            "description": "Max stale requests. Required for BoundedStaleness. Valid ranges, Single Region: 10 to 1000000. Multi Region: 100000 to 1000000."
+         }
+      },
+      "maxIntervalInSeconds": {
+         "type": "int",
+         "defaultValue": 300,
+         "minValue": 5,
+         "maxValue": 86400,
+         "metadata": {
+            "description": "Max lag time (seconds). Required for BoundedStaleness. Valid ranges, Single Region: 5 to 84600. Multi Region: 300 to 86400."
+         }
+      },
+      "automaticFailover": {
+         "type": "bool",
+         "defaultValue": true,
+         "allowedValues": [
+            true,
+            false
+         ],
+         "metadata": {
+            "description": "Enable automatic failover for regions"
+         }
+      },
+      "autoscaleMaxThroughput": {
+         "type": "int",
+         "defaultValue": 4000,
+         "minValue": 400,
+         "maxValue": 4000,
+         "metadata": {
+            "description": "Maximum autoscale throughput for the Cassandra table"
+         }
+      },
+      "databricksWorkspaceName": {
+         "type": "string",
+         "defaultValue": "importnutritiondata",
+         "metadata": {
+            "description": "Azure Databricks workspace name"
+         }
+      }
+   },
+   "variables": {
+      "accountName": "[toLower(parameters('accountName'))]",
+      "consistencyPolicy": {
+         "Eventual": {
+            "defaultConsistencyLevel": "Eventual"
+         },
+         "ConsistentPrefix": {
+            "defaultConsistencyLevel": "ConsistentPrefix"
+         },
+         "Session": {
+            "defaultConsistencyLevel": "Session"
+         },
+         "BoundedStaleness": {
+            "defaultConsistencyLevel": "BoundedStaleness",
+            "maxStalenessPrefix": "[parameters('maxStalenessPrefix')]",
+            "maxIntervalInSeconds": "[parameters('maxIntervalInSeconds')]"
+         },
+         "Strong": {
+            "defaultConsistencyLevel": "Strong"
+         }
+      },
+      "locations": [
+         {
+            "locationName": "[parameters('primaryRegion')]",
+            "failoverPriority": 0,
+            "isZoneRedundant": false
+         },
+         {
+            "locationName": "[parameters('secondaryRegion')]",
+            "failoverPriority": 1,
+            "isZoneRedundant": false
+         }
+      ],
+      "managedResourceGroupName": "[concat('databricks-rg-', parameters('databricksWorkspaceName'), '-', uniqueString(parameters('databricksWorkspaceName'), resourceGroup().id))]"
+   },
+   "resources": [
+      {
+         "type": "Microsoft.DocumentDB/databaseAccounts",
+         "name": "[variables('accountName')]",
+         "apiVersion": "2020-04-01",
+         "location": "[parameters('location')]",
+         "kind": "GlobalDocumentDB",
+         "properties": {
+            "capabilities": [ { "name": "EnableCassandra" } ],
+            "consistencyPolicy": "[variables('consistencyPolicy')[parameters('defaultConsistencyLevel')]]",
+            "locations": "[variables('locations')]",
+            "databaseAccountOfferType": "Standard",
+            "enableAutomaticFailover": "[parameters('automaticFailover')]"
+         }
+      },
+      {
+         "type": "Microsoft.DocumentDB/databaseAccounts/cassandraKeyspaces",
+         "name": "[concat(variables('accountName'), '/', 'nutritionkeyspace')]",
+         "apiVersion": "2020-04-01",
+         "dependsOn": [
+            "[resourceId('Microsoft.DocumentDB/databaseAccounts/', variables('accountName'))]"
+         ],
+         "properties": {
+            "resource": {
+               "id": "nutritionkeyspace"
+            }
+         }
+      },
+      {
+         "type": "Microsoft.DocumentDb/databaseAccounts/cassandraKeyspaces/tables",
+         "name": "[concat(variables('accountName'), '/', 'nutritionkeyspace', '/', 'foodtable')]",
+         "apiVersion": "2020-04-01",
+         "dependsOn": [
+            "nutritionkeyspace"
+         ],
+         "properties": {
+            "resource": {
+               "id": "foodtable",
+               "schema": {
+                  "columns": [
+                     {
+                        "name": "foodid",
+                        "type": "text"
+                     },
+                     {
+                        "name": "commonname",
+                        "type": "text"
+                     },
+                     {
+                        "name": "isfromsurvey",
+                        "type": "text"
+                     },
+                     {
+                        "name": "manufacturername",
+                        "type": "text"
+                     },
+                     {
+                        "name": "nutrients",
+                        "type": "text"
+                     },
+                     {
+                        "name": "servings",
+                        "type": "text"
+                     },
+                     {
+                        "name": "description",
+                        "type": "text"
+                     },
+                     {
+                        "name": "tags",
+                        "type": "text"
+                     },
+                     {
+                        "name": "foodgroup",
+                        "type": "text"
+                     },
+                     {
+                        "name": "version",
+                        "type": "text"
+                     }
+                  ],
+                  "partitionKeys": [
+                     { "name": "foodid" }
+                  ]
+               }
+            },
+            "options": {
+               "autoscaleSettings": {
+                  "maxThroughput": "20000"
+               }
+            }
+         }
+      },
+      {
+         "type": "Microsoft.DocumentDB/databaseAccounts/cassandraKeyspaces",
+         "name": "[concat(variables('accountName'), '/', 'storekeyspace')]",
+         "apiVersion": "2020-04-01",
+         "dependsOn": [
+            "[resourceId('Microsoft.DocumentDB/databaseAccounts/', variables('accountName'))]"
+         ],
+         "properties": {
+            "resource": {
+               "id": "storekeyspace"
+            }
+         }
+      },
+      {
+         "type": "Microsoft.DocumentDb/databaseAccounts/cassandraKeyspaces/tables",
+         "name": "[concat(variables('accountName'), '/', 'storekeyspace', '/', 'carttable')]",
+         "apiVersion": "2020-04-01",
+         "dependsOn": [
+            "storekeyspace"
+         ],
+         "properties": {
+            "resource": {
+               "id": "carttable",
+               "schema": {
+                  "columns": [
+                     {
+                        "name": "name",
+                        "type": "int"
+                     },
+                     {
+                        "name": "cartid",
+                        "type": "text"
+                     },
+                     {
+                        "name": "action",
+                        "type": "text"
+                     },
+                     {
+                        "name": "item",
+                        "type": "text"
+                     },
+                     {
+                        "name": "price",
+                        "type": "text"
+                     },
+                     {
+                        "name": "buyerstate",
+                        "type": "text"
+                     }
+                  ],
+                  "partitionKeys": [
+                     { "name": "name" }
+                  ]
+               }
+            },
+            "options": {
+               "autoscaleSettings": {
+                  "maxThroughput": "[parameters('autoscaleMaxThroughput')]"
+               }
+            }
+         }
+      },
+      {
+         "type": "Microsoft.Databricks/workspaces",
+         "apiVersion": "2018-04-01",
+         "name": "[parameters('databricksWorkspaceName')]",
+         "location": "[parameters('location')]",
+         "sku": {
+            "name": "standard"
+         },
+         "properties": {
+            "ManagedResourceGroupId": "[concat(subscription().id, '/resourceGroups/', variables('managedResourceGroupName'))]"
+         }
+      }
+   ]
+}

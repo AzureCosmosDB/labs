@@ -137,6 +137,23 @@ Java 8 JRE (or greater) | [/jre8-downloads](https://www.oracle.com/technetwork/j
 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
+# Cassandra API
+
+**Workshop Decks**
+
+- [Introduction](./decks/Cassandra/Cassandra_Workshop_Introduction.pptx)
+
+## Cassandra Labs
+
+*It is recommended to complete the labs in the order specified below:*
+
+- [Pre-lab: Creating an Azure Cosmos DB Cassandra API Account](cassandra/labs/00-account_setup.md)
+- [Lab 1: Load Data with Databricks](cassandra/labs/01-load_data_with_databricks.md)
+- [Lab 2: Query Data with CQLSH](cassandra/labs/02-querying_with_cqlsh.md)
+- [Lab 3: Implementing Retry and Failover](cassandra/labs/03-implementing_retry_and_failover.md)
+- [Lab 4: Change Feed with Spring Data](cassandra/labs/04-change_feed_with_spring_data.md)
+- [Lab 5: Cleaning Up](cassandra/labs/07-cleaning_up.md)
+
 # Appendix: Stickers
 
 Adobe Illustrator files for printing cosmic stickers (e.g. stickermule)
