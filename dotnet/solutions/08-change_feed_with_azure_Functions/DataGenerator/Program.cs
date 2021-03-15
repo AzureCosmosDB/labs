@@ -14,7 +14,7 @@ namespace DataGenerator
         private static readonly string _databaseId = "StoreDatabase";
         private static readonly string _containerId = "CartContainer";
 
-        private Randomizer _random = new Randomizer();
+        private readonly Randomizer _random = new();
 
 
         static async Task Main(string[] args)
@@ -27,7 +27,7 @@ namespace DataGenerator
             {
                 foreach (var action in GenerateActions())
                 {
-                    AddItem(action);
+                    await AddItem(action);
                     Console.Write("*");
                 }
             }
@@ -37,7 +37,7 @@ namespace DataGenerator
 
         private static List<CartAction> GenerateActions()
         {
-            Randomizer random = new Randomizer();
+            Randomizer random = new();
 
             var items = new string[]
             {

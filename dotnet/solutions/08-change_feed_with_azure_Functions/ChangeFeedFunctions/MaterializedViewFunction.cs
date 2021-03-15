@@ -58,9 +58,12 @@ namespace ChangeFeedFunctions
 
                     foreach (var key in stateDict.Keys)
                     {
-                        var query = new QueryDefinition("select * from StateSales s where s.State = @state").UseParameter("@state", key);
+                        var query = new QueryDefinition("select * from StateSales s where s.State = @state").WithParameter("@state", key);
 
-                        var resultSet = container.GetItemQueryIterator<StateCount>(query, requestOptions: new QueryRequestOptions() { PartitionKey = new Microsoft.Azure.Cosmos.PartitionKey(key), MaxItemCount = 1 });
+                        var resultSet = container.GetItemQueryIterator<StateCount>(
+                            query, 
+                            
+                            requestOptions: new QueryRequestOptions() { PartitionKey = new Microsoft.Azure.Cosmos.PartitionKey(key), MaxItemCount = 1 });
 
                         while (resultSet.HasMoreResults)
                         {
@@ -68,10 +71,12 @@ namespace ChangeFeedFunctions
 
                             if (stateCount == null)
                             {
-                                stateCount = new StateCount();
-                                stateCount.State = key;
-                                stateCount.TotalSales = stateDict[key].Sum();
-                                stateCount.Count = stateDict[key].Count;
+                                stateCount = new StateCount
+                                {
+                                    State = key,
+                                    TotalSales = stateDict[key].Sum(),
+                                    Count = stateDict[key].Count
+                                };
                             }
                             else
                             {
