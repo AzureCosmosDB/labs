@@ -536,7 +536,7 @@ We can explore this concept through sample queries.
 
 6. Review the results, you should now see many items returned. There are thousands of volcanoes located outside our small rectangle region.
 
-> When creating a GeoJSON polygon, whether it be inside a query or item, the order of the coordinates specified matters. Azure Cosmos DB will not reject coordinates that indicate the inverse of a polygon's shape. In addition, GeoJSON requires that you specify coordinates in the format: (latitude, longitude).
+> When creating a GeoJSON polygon, whether it be inside a query or item, the order of the coordinates specified matters. Azure Cosmos DB will not reject coordinates that indicate the inverse of a polygon's shape. In addition, GeoJSON requires that you specify coordinates in the format: (longitude, latitude).
 
 ## Lab Cleanup
 
