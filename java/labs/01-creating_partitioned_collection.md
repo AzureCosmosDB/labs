@@ -39,7 +39,7 @@ The **CosmosAsyncClient** class is the main "entry point" to using the SQL API i
 1. Within the **Lab01Main.java** editor tab, add the following imports at the top of the file:
 
     ```java
-    import com.azure.cosmos.implementation.ConnectionPolicy;
+    import com.azure.cosmos.ConnectionPolicy;
     import com.azure.cosmos.ConsistencyLevel;
     import com.azure.cosmos.CosmosAsyncClient;
     import com.azure.cosmos.CosmosAsyncDatabase;
@@ -90,12 +90,15 @@ The **CosmosAsyncClient** class is the main "entry point" to using the SQL API i
 1. Within the **main** method, add the following lines of code to create a **CosmosAsyncClient** instance, replacing the ***Azure Cosmos DB Account Location*** placeholder with the location setting of your Azure Cosmos DB account:
 
     ```java
+    ConnectionPolicy defaultPolicy = ConnectionPolicy.getDefaultPolicy();
+    defaultPolicy.setPreferredLocations(Lists.newArrayList("<your azure cosmos db account location>"));
+
     CosmosAsyncClient client = new CosmosClientBuilder()
-                .endpoint(endpointUri)
-                .key(primaryKey)
-                .consistencyLevel(ConsistencyLevel.EVENTUAL)
-                .contentResponseOnWriteEnabled(true)
-                .buildAsyncClient();
+            .setEndpoint(endpointUri)
+            .setKey(primaryKey)
+            .setConnectionPolicy(defaultPolicy)
+            .setConsistencyLevel(ConsistencyLevel.EVENTUAL)
+            .buildAsyncClient();
     ```
 
 1. Now add a line at the end of the **main** method which closes the client:
@@ -112,13 +115,15 @@ The **CosmosAsyncClient** class is the main "entry point" to using the SQL API i
         private static String endpointUri = "<your uri>";
         private static String primaryKey = "<your key>";    
         public static void main(String[] args) {
-            
-             CosmosAsyncClient client = new CosmosClientBuilder()
-                .endpoint(endpointUri)
-                .key(primaryKey)
-                .consistencyLevel(ConsistencyLevel.EVENTUAL)
-                .contentResponseOnWriteEnabled(true)
-                .buildAsyncClient();
+            ConnectionPolicy defaultPolicy = ConnectionPolicy.getDefaultPolicy();
+            defaultPolicy.setPreferredLocations(Lists.newArrayList("<your azure cosmos db account location>"));
+        
+            CosmosAsyncClient client = new CosmosClientBuilder()
+                    .setEndpoint(endpointUri)
+                    .setKey(primaryKey)
+                    .setConnectionPolicy(defaultPolicy)
+                    .setConsistencyLevel(ConsistencyLevel.EVENTUAL)
+                    .buildAsyncClient();
 
             client.close();        
         }
@@ -160,12 +165,12 @@ The **CosmosAsyncClient** class is the main "entry point" to using the SQL API i
     All code added in subsequent steps should be placed between the build-client call and the close-client call in the **main** method:
 
     ```java
-     CosmosAsyncClient client = new CosmosClientBuilder()
-                .endpoint(endpointUri)
-                .key(primaryKey)
-                .consistencyLevel(ConsistencyLevel.EVENTUAL)
-                .contentResponseOnWriteEnabled(true)
-                .buildAsyncClient();
+    CosmosAsyncClient client = new CosmosClientBuilder()
+            .setEndpoint(endpointUri)
+            .setKey(primaryKey)
+            .setConnectionPolicy(defaultPolicy)
+            .setConsistencyLevel(ConsistencyLevel.EVENTUAL)
+            .buildAsyncClient();
     // <= Add code here
     client.close();   
     ```
@@ -177,9 +182,9 @@ The **CosmosAsyncClient** class is the main "entry point" to using the SQL API i
         targetDatabase = databaseResponse.getDatabase();
         CosmosContainerProperties containerProperties = 
             new CosmosContainerProperties("CustomCollection", "/type");
-        return targetDatabase.createContainerIfNotExists(containerProperties, ThroughputProperties.createManualThroughput(400));
+        return targetDatabase.createContainerIfNotExists(containerProperties, 400);
     }).flatMap(containerResponse -> {
-        customContainer = targetDatabase.getContainer(containerResponse.getProperties().getId());
+        customContainer = containerResponse.getContainer();
         return Mono.empty();
     }).subscribe(voidItem -> {}, err -> {}, () -> {
         resourcesCreated.set(true);
@@ -229,7 +234,7 @@ The **CosmosAsyncClient** class is the main "entry point" to using the SQL API i
     ```java
     CosmosContainerProperties containerProperties = 
         new CosmosContainerProperties("CustomCollection", "/type");
-    return targetDatabase.createContainerIfNotExists(containerProperties, ThroughputProperties.createManualThroughput(400));
+    return targetDatabase.createContainerIfNotExists(containerProperties, 400);
     ```
 
     > This code will check to see if a container exists in your database with the specified name ("CustomCollection"), partition key ("/type"), and provisioned throughput (400 RU/s). If a container that matches does not exist, it will create a new container. Here is where we can specify the RU/s allocated for a newly created container. If this is not specified, the SDK has a default value for RU/s assigned to a container.
@@ -241,7 +246,7 @@ The **CosmosAsyncClient** class is the main "entry point" to using the SQL API i
     ```java
     CosmosContainerProperties containerProperties = 
         new CosmosContainerProperties("CustomCollection", "/type");
-    return targetDatabase.createContainerIfNotExists(containerProperties, ThroughputProperties.createManualThroughput(10000));
+    return targetDatabase.createContainerIfNotExists(containerProperties, 10000);
     ```
 
 1. Above these lines of code, create a new ``IndexingPolicy`` instance with a custom indexing policy configured:
@@ -251,13 +256,14 @@ The **CosmosAsyncClient** class is the main "entry point" to using the SQL API i
     indexingPolicy.setIndexingMode(IndexingMode.CONSISTENT);
     indexingPolicy.setAutomatic(true);
     List<IncludedPath> includedPaths = new ArrayList<>();
-    IncludedPath includedPath = new IncludedPath("/*");
+    IncludedPath includedPath = new IncludedPath();
+    includedPath.setPath("/*");
     includedPaths.add(includedPath);
     indexingPolicy.setIncludedPaths(includedPaths);  
 
     CosmosContainerProperties containerProperties = 
         new CosmosContainerProperties("CustomCollection", "/type");
-    return targetDatabase.createContainerIfNotExists(containerProperties, ThroughputProperties.createManualThroughput(10000));    
+    return targetDatabase.createContainerIfNotExists(containerProperties, 10000);    
     ```
 
     > By default, all Azure Cosmos DB data is indexed. Although many customers are happy to let Azure Cosmos DB automatically handle all aspects of indexing, you can specify a custom indexing policy for containers. This indexing policy is very similar to the default indexing policy created by the SDK.
@@ -269,14 +275,15 @@ The **CosmosAsyncClient** class is the main "entry point" to using the SQL API i
     indexingPolicy.setIndexingMode(IndexingMode.CONSISTENT);
     indexingPolicy.setAutomatic(true);
     List<IncludedPath> includedPaths = new ArrayList<>();
-    IncludedPath includedPath = new IncludedPath("/*");
+    IncludedPath includedPath = new IncludedPath();
+    includedPath.setPath("/*");
     includedPaths.add(includedPath);
     indexingPolicy.setIncludedPaths(includedPaths);  
 
     CosmosContainerProperties containerProperties = 
         new CosmosContainerProperties("CustomCollection", "/type");
     containerProperties.setIndexingPolicy(indexingPolicy);
-    return targetDatabase.createContainerIfNotExists(containerProperties, ThroughputProperties.createManualThroughput(10000));    
+    return targetDatabase.createContainerIfNotExists(containerProperties, 10000);    
     ```
 
 1. Save all of your open editor tabs.
@@ -298,7 +305,7 @@ The **CosmosAsyncClient** class is the main "entry point" to using the SQL API i
     import java.math.BigDecimal;
     import java.text.DecimalFormat;
 
-    import com.azure.cosmos.implementation.ConnectionPolicy;
+    import com.azure.cosmos.ConnectionPolicy;
     import com.azure.cosmos.ConsistencyLevel;
     import com.azure.cosmos.CosmosAsyncClient;
     import com.azure.cosmos.CosmosAsyncDatabase;
@@ -324,12 +331,15 @@ The **CosmosAsyncClient** class is the main "entry point" to using the SQL API i
         private static CosmosAsyncContainer customContainer;
         private static AtomicBoolean resourcesCreated = new AtomicBoolean(false);     
         public static void main(String[] args) {
-            
-             CosmosAsyncClient client = new CosmosClientBuilder()
-                .endpoint(endpointUri)
-                .key(primaryKey)
-                .consistencyLevel(ConsistencyLevel.EVENTUAL)
-                .buildAsyncClient();
+            ConnectionPolicy defaultPolicy = ConnectionPolicy.getDefaultPolicy();
+            defaultPolicy.setPreferredLocations(Lists.newArrayList("<your azure cosmos db account location>"));
+        
+            CosmosAsyncClient client = new CosmosClientBuilder()
+                    .setEndpoint(endpointUri)
+                    .setKey(primaryKey)
+                    .setConnectionPolicy(defaultPolicy)
+                    .setConsistencyLevel(ConsistencyLevel.EVENTUAL)
+                    .buildAsyncClient();
 
             client.createDatabaseIfNotExists("EntertainmentDatabase").flatMap(databaseResponse -> {
                 targetDatabase = databaseResponse.getDatabase();
@@ -338,16 +348,17 @@ The **CosmosAsyncClient** class is the main "entry point" to using the SQL API i
                 indexingPolicy.setIndexingMode(IndexingMode.CONSISTENT);
                 indexingPolicy.setAutomatic(true);
                 List<IncludedPath> includedPaths = new ArrayList<>();
-                IncludedPath includedPath = new IncludedPath("/*");
+                IncludedPath includedPath = new IncludedPath();
+                includedPath.setPath("/*");
                 includedPaths.add(includedPath);
                 indexingPolicy.setIncludedPaths(includedPaths);            
 
                 CosmosContainerProperties containerProperties = 
                     new CosmosContainerProperties("CustomCollection", "/type");
                 containerProperties.setIndexingPolicy(indexingPolicy);
-                return targetDatabase.createContainerIfNotExists(containerProperties, ThroughputProperties.createManualThroughput(10000));
+                return targetDatabase.createContainerIfNotExists(containerProperties, 10000);
             }).flatMap(containerResponse -> {
-                customContainer = targetDatabase.getContainer(containerResponse.getProperties().getId());
+                customContainer = containerResponse.getContainer();
                 return Mono.empty();
             }).subscribe(voidItem -> {}, err -> {}, () -> {
                 resourcesCreated.set(true);
@@ -374,12 +385,12 @@ The **CosmosAsyncClient** class is the main "entry point" to using the SQL API i
 1. Locate the block of code starting with client creation and ending with client closure within the **main** method. Delete any existing code except for client creation and closure:
 
     ```java
-     CosmosAsyncClient client = new CosmosClientBuilder()
-                .endpoint(endpointUri)
-                .key(primaryKey)
-                .consistencyLevel(ConsistencyLevel.EVENTUAL)
-                .contentResponseOnWriteEnabled(true)
-                .buildAsyncClient();     
+    CosmosAsyncClient client = new CosmosClientBuilder()
+            .setEndpoint(endpointUri)
+            .setKey(primaryKey)
+            .setConnectionPolicy(defaultPolicy)
+            .setConsistencyLevel(ConsistencyLevel.EVENTUAL)
+            .buildAsyncClient();      
 
     client.close();  
     ```
@@ -422,8 +433,8 @@ The **CosmosAsyncClient** class is the main "entry point" to using the SQL API i
 
     ```java
     Flux<PurchaseFoodOrBeverage> foodInteractionsFlux = Flux.fromIterable(foodInteractions);
-    List<CosmosItemResponse<PurchaseFoodOrBeverage>> results = 
-                foodInteractionsFlux.flatMap(interaction -> customContainer.createItem(interaction)).collectList().block();
+    List<CosmosAsyncItemResponse<PurchaseFoodOrBeverage>> results = 
+        foodInteractionsFlux.flatMap(interaction -> customContainer.createItem(interaction)).collectList().block();
     ```
 
     > The ``createItem`` method of the ``CosmosAsyncContainer`` class takes in an object that you would like to serialize into JSON and store as a document within the specified container. The ``id`` property, which here we've assigned to a unique UUID on each object, is a special required value in Cosmos DB that is used for indexing and must be unique for every item in a container.
@@ -436,7 +447,7 @@ The **CosmosAsyncClient** class is the main "entry point" to using the SQL API i
 
     > Notice that these prints are accomplished using a **log4j** logger instance. For best performance it is recommended to use an asynchronous logger such as **log4j** during high-throughput request operations, so that Cosmos DB requests are not blocked waiting for the print statements to complete. 
 
-    > The ``CosmosItemResponse`` type has a ``getItem`` method that returns an object representing the item as well as other properties to give you access to interesting data about an item such as its ETag.
+    > The ``CosmosAsyncItemResponse`` type has a ``getItem`` method that returns an object representing the item as well as other properties to give you access to interesting data about an item such as its ETag.
 
 1. Your **main** method should look like this:
 
@@ -446,10 +457,10 @@ The **CosmosAsyncClient** class is the main "entry point" to using the SQL API i
         defaultPolicy.setPreferredLocations(Lists.newArrayList("West US"));
     
         CosmosAsyncClient client = new CosmosClientBuilder()
-                .endpoint(endpointUri)
-                .key(primaryKey)
-                .consistencyLevel(ConsistencyLevel.EVENTUAL)
-                .contentResponseOnWriteEnabled(true)
+                .setEndpoint(endpointUri)
+                .setKey(primaryKey)
+                .setConnectionPolicy(defaultPolicy)
+                .setConsistencyLevel(ConsistencyLevel.EVENTUAL)
                 .buildAsyncClient();
 
         targetDatabase = client.getDatabase("EntertainmentDatabase");
@@ -473,8 +484,8 @@ The **CosmosAsyncClient** class is the main "entry point" to using the SQL API i
         }
 
         Flux<PurchaseFoodOrBeverage> foodInteractionsFlux = Flux.fromIterable(foodInteractions);
-        List<CosmosItemResponse<PurchaseFoodOrBeverage>> results =
-                foodInteractionsFlux.flatMap(interaction -> customContainer.createItem(interaction)).collectList().block();
+        List<CosmosAsyncItemResponse<PurchaseFoodOrBeverage>> results = 
+            foodInteractionsFlux.flatMap(interaction -> customContainer.createItem(interaction)).collectList().block();
 
         results.forEach(result -> logger.info("Item Created\t{}",result.getItem().getId()));
 
@@ -498,11 +509,14 @@ The **CosmosAsyncClient** class is the main "entry point" to using the SQL API i
 
     ```java
     public static void main(String[] args) {
+        ConnectionPolicy defaultPolicy = ConnectionPolicy.getDefaultPolicy();
+        defaultPolicy.setPreferredLocations(Lists.newArrayList("West US"));
     
         CosmosAsyncClient client = new CosmosClientBuilder()
-                .endpoint(endpointUri)
-                .key(primaryKey)
-                .consistencyLevel(ConsistencyLevel.EVENTUAL)
+                .setEndpoint(endpointUri)
+                .setKey(primaryKey)
+                .setConnectionPolicy(defaultPolicy)
+                .setConsistencyLevel(ConsistencyLevel.EVENTUAL)
                 .buildAsyncClient();
 
         targetDatabase = client.getDatabase("EntertainmentDatabase");
@@ -520,10 +534,10 @@ The **CosmosAsyncClient** class is the main "entry point" to using the SQL API i
         defaultPolicy.setPreferredLocations(Lists.newArrayList("West US"));
     
         CosmosAsyncClient client = new CosmosClientBuilder()
-                .endpoint(endpointUri)
-                .key(primaryKey)
-                .consistencyLevel(ConsistencyLevel.EVENTUAL)
-                .contentResponseOnWriteEnabled(true)
+                .setEndpoint(endpointUri)
+                .setKey(primaryKey)
+                .setConnectionPolicy(defaultPolicy)
+                .setConsistencyLevel(ConsistencyLevel.EVENTUAL)
                 .buildAsyncClient();
 
         targetDatabase = client.getDatabase("EntertainmentDatabase");
@@ -572,11 +586,12 @@ The **CosmosAsyncClient** class is the main "entry point" to using the SQL API i
         defaultPolicy.setPreferredLocations(Lists.newArrayList("West US"));
     
         CosmosAsyncClient client = new CosmosClientBuilder()
-                .endpoint(endpointUri)
-                .key(primaryKey)
-                .consistencyLevel(ConsistencyLevel.EVENTUAL)
+                .setEndpoint(endpointUri)
+                .setKey(primaryKey)
+                .setConnectionPolicy(defaultPolicy)
+                .setConsistencyLevel(ConsistencyLevel.EVENTUAL)
                 .buildAsyncClient();
-   
+
         targetDatabase = client.getDatabase("EntertainmentDatabase");
         customContainer = targetDatabase.getContainer("CustomCollection");
 
@@ -592,9 +607,10 @@ The **CosmosAsyncClient** class is the main "entry point" to using the SQL API i
         defaultPolicy.setPreferredLocations(Lists.newArrayList("West US"));
     
         CosmosAsyncClient client = new CosmosClientBuilder()
-                .endpoint(endpointUri)
-                .key(primaryKey)
-                .consistencyLevel(ConsistencyLevel.EVENTUAL)
+                .setEndpoint(endpointUri)
+                .setKey(primaryKey)
+                .setConnectionPolicy(defaultPolicy)
+                .setConsistencyLevel(ConsistencyLevel.EVENTUAL)
                 .buildAsyncClient();
 
         targetDatabase = client.getDatabase("EntertainmentDatabase");
@@ -636,4 +652,4 @@ The **CosmosAsyncClient** class is the main "entry point" to using the SQL API i
 
 1. Close the Visual Studio Code application.
 
-> If this is your final lab, follow the steps in [Removing Lab Assets](11-cleaning_up.md) to remove all lab resources.
+> If this is your final lab, follow the steps in [Removing Lab Assets](11-cleaning_up.md) to remove all lab resources. 

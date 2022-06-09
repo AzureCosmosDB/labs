@@ -12,6 +12,7 @@ import com.github.javafaker.Faker;
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
 
+import com.azure.cosmos.ConnectionPolicy;
 import com.azure.cosmos.ConsistencyLevel;
 import com.azure.cosmos.CosmosAsyncClient;
 import com.azure.cosmos.CosmosAsyncDatabase;
@@ -24,13 +25,13 @@ import com.azure.cosmos.handsonlabs.common.datatypes.PurchaseFoodOrBeverage;
 import com.azure.cosmos.handsonlabs.common.datatypes.Transaction;
 import com.azure.cosmos.handsonlabs.common.datatypes.ViewMap;
 import com.azure.cosmos.handsonlabs.common.datatypes.WatchLiveTelevisionChannel;
+import com.azure.cosmos.models.CosmosAsyncItemResponse;
 import com.azure.cosmos.models.CosmosContainerProperties;
 import com.azure.cosmos.models.CosmosItemResponse;
-import com.azure.cosmos.models.CosmosQueryRequestOptions;
+import com.azure.cosmos.models.FeedOptions;
 import com.azure.cosmos.models.IndexingMode;
 import com.azure.cosmos.models.IndexingPolicy;
 import com.azure.cosmos.models.PartitionKey;
-import com.azure.cosmos.models.ThroughputProperties;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.azure.cosmos.models.IncludedPath;
 
@@ -50,154 +51,135 @@ public class Lab09Main {
     protected static Logger logger = LoggerFactory.getLogger(Lab09Main.class.getSimpleName());
     private static ObjectMapper mapper = new ObjectMapper();
     private static String endpointUri = "<your uri>";
-    private static String primaryKey = "<your key>";
+    private static String primaryKey = "<your key>";   
     private static CosmosAsyncDatabase database;
-    private static CosmosAsyncContainer peopleContainer;
-    private static CosmosAsyncContainer transactionContainer;
-
+    private static CosmosAsyncContainer peopleContainer;  
+    private static CosmosAsyncContainer transactionContainer;      
     public static void main(String[] args) {
+        ConnectionPolicy defaultPolicy = ConnectionPolicy.getDefaultPolicy();
+        defaultPolicy.setPreferredLocations(Lists.newArrayList("West US 2"));
 
         CosmosAsyncClient client = new CosmosClientBuilder()
-                .endpoint(endpointUri)
-                .key(primaryKey)
-                .consistencyLevel(ConsistencyLevel.EVENTUAL)
-                .contentResponseOnWriteEnabled(true)
+                .setEndpoint(endpointUri)
+                .setKey(primaryKey)
+                .setConnectionPolicy(defaultPolicy)
+                .setConsistencyLevel(ConsistencyLevel.EVENTUAL)
                 .buildAsyncClient();
 
         database = client.getDatabase("FinancialDatabase");
         peopleContainer = database.getContainer("PeopleCollection");
         transactionContainer = database.getContainer("TransactionCollection");
 
-        Person person = new Person();
-        CosmosItemResponse<Person> response = peopleContainer.createItem(person).block();
+        Person person = new Person(); 
+        CosmosAsyncItemResponse<Person> response = peopleContainer.createItem(person).block();
 
         logger.info("First item insert: {} RUs", response.getRequestCharge());
 
+        
         List<Person> children = new ArrayList<Person>();
-        for (int i = 0; i < 4; i++)
-            children.add(new Person());
+        for (int i=0; i<4; i++) children.add(new Person());
         Member member = new Member(UUID.randomUUID().toString(),
-                new Person(), // accountHolder
-                new Family(new Person(), // spouse
-                        children)); // children
+                                   new Person(), // accountHolder
+                                   new Family(new Person(), // spouse
+                                              children)); // children
 
-        CosmosItemResponse<Member> response2 = peopleContainer.createItem(member).block();
+        CosmosAsyncItemResponse<Member> response2 = peopleContainer.createItem(member).block();
 
         logger.info("Second item insert: {} RUs", response2.getRequestCharge());
 
         List<Transaction> transactions = new ArrayList<Transaction>();
-        for (int i = 0; i < 10000; i++)
-            transactions.add(new Transaction());
+        for (int i=0; i<100; i++) transactions.add(new Transaction());
 
         /**
-         * Although this block of code uses Async API to insert Cosmos DB docs into a
-         * container,
-         * we are blocking on each createItem call, so this implementation is
-         * effectively Sync.
+         * Although this block of code uses Async API to insert Cosmos DB docs into a container,
+         * we are blocking on each createItem call, so this implementation is effectively Sync.
          * We will not get enough throughput to saturate 400 RU/s with this approach.
-         */
+                 
+        for (Transaction transaction : transactions) {
+            CosmosAsyncItemResponse<Transaction> result = transactionContainer.createItem(transaction).block();
+            logger.info("Item Created {}", result.getItem().getId());
+        }
 
-        // for (Transaction transaction : transactions) {
-        //     CosmosItemResponse<Transaction> result = transactionContainer.createItem(transaction).block();
-        //     logger.info("Item Created {}", result.getItem().getId());
-        // }
+        */
 
-        /**
-         * Try this truly asynchronous use of createItem. You will see it can
-         * generate much more throughput to Azure Cosmos DB.
-         */
+        /** Try this truly asynchronous use of createItem. You will see it can generate much more throughput to Azure Cosmos DB. */
 
-        // Flux<Transaction> transactionsFlux = Flux.fromIterable(transactions);
-        // List<CosmosItemResponse<Transaction>> results = transactionsFlux.flatMap(interaction -> {
-        //     return transactionContainer.createItem(interaction);
-        // })
-        //         .collectList()
-        //         .block();
+        Flux<Transaction> transactionsFlux = Flux.fromIterable(transactions);
+        List<CosmosAsyncItemResponse<Transaction>> results = 
+            transactionsFlux.flatMap(interaction -> {
+                return transactionContainer.createItem(interaction);
+        })
+        .collectList()
+        .block();
 
-        // results.forEach(result -> logger.info("Item Created\t{}", result.getItem().getId()));
+        results.forEach(result -> logger.info("Item Created\t{}",result.getItem().getId()));
 
-        // String sql = "SELECT TOP 1000 * FROM c WHERE c.processed = true ORDER BY c.amount DESC";
+        int maxItemCount = 1000;
+        int maxDegreeOfParallelism = -1;
+        int maxBufferedItemCount = -1;
 
-        // CosmosQueryRequestOptions options = new CosmosQueryRequestOptions();
-        // transactionContainer.queryItems(sql, options, Transaction.class)
-        //         .byPage()
-        //         .next() // Take only the first page
-        //         .flatMap(page -> {
-        //             logger.info("Request Charge: {} RUs", page.getRequestCharge());
-        //             return Mono.empty();
-        //         }).block();
+        FeedOptions options = new FeedOptions();
+        options.setMaxItemCount(maxItemCount);
+        options.setMaxBufferedItemCount(maxBufferedItemCount);
+        options.setMaxDegreeOfParallelism(maxDegreeOfParallelism);
 
-        // int maxItemCount = 1000;
-        // int maxDegreeOfParallelism = -1;
-        // int maxBufferedItemCount = 50000;
+        logger.info("\n\n" +
+                    "MaxItemCount:\t{}\n" +
+                    "MaxDegreeOfParallelism:\t{}\n" +
+                    "MaxBufferedItemCount:\t{}" + 
+                    "\n\n",
+                    maxItemCount, maxDegreeOfParallelism, maxBufferedItemCount);
 
-        // CosmosQueryRequestOptions options = new CosmosQueryRequestOptions();
-        // options.setMaxBufferedItemCount(maxBufferedItemCount);
-        // options.setMaxDegreeOfParallelism(maxDegreeOfParallelism);
+        String sql = "SELECT * FROM c WHERE c.processed = true ORDER BY c.amount DESC";                    
 
-        // logger.info("\n\n" + "MaxItemCount:\t{}\n" + "MaxDegreeOfParallelism:\t{}\n"
-        //         +
-        //         "MaxBufferedItemCount:\t{}" + "\n\n", maxItemCount, maxDegreeOfParallelism,
-        //         maxBufferedItemCount);
+        StopWatch timer = StopWatch.createStarted();
 
-        // String sql = "SELECT * FROM c WHERE c.processed = true ORDER BY c.amount DESC";
+        transactionContainer.queryItems(sql, options, Transaction.class)
+                .byPage()
+                .flatMap(page -> {
+                //Don't do anything with the query page results
+                return Mono.empty();
+        }).blockLast();
 
-        // StopWatch timer = StopWatch.createStarted();
+        timer.stop();
 
-        // transactionContainer.queryItems(sql, options, Transaction.class)
-        //         .byPage(maxItemCount)
-        //         .flatMap(page -> {
-        //             // Don't do anything with the query page results
-        //             return Mono.empty();
-        //         }).blockLast();
+        logger.info("\n\nElapsed Time:\t{}s\n\n", ((double)timer.getTime(TimeUnit.MILLISECONDS))/1000.0);
 
-        // timer.stop();
+        String sqlItemQuery = "SELECT TOP 1 * FROM c WHERE c.id = 'example.document'";                    
 
-        // logger.info("\n\nElapsed Time:\t{}s\n\n",
-        //         ((double) timer.getTime(TimeUnit.MILLISECONDS)) / 1000.0);
+        FeedOptions optionsItemQuery = new FeedOptions();
 
-        // String sqlItemQuery = "SELECT TOP 1 * FROM c WHERE c.id='example.document'";
+        peopleContainer.queryItems(sqlItemQuery, optionsItemQuery, Member.class)
+                .byPage()
+                .next()
+                .flatMap(page -> {
+                logger.info("\n\n" +
+                            "{} RUs for\n" +
+                            "{}" + 
+                            "\n\n",
+                            page.getRequestCharge(),
+                            page.getElements().iterator().next());
+                return Mono.empty();
+        }).block();
 
-        // CosmosQueryRequestOptions options = new CosmosQueryRequestOptions();
+        peopleContainer.readItem("example.document", new PartitionKey("<LastName>"), Member.class)
+        .flatMap(pointReadResponse -> {
+           int expectedWritesPerSec = 200;
+           int expectedReadsPerSec = 800;
+           logger.info("\n\n{} RUs\n\n",pointReadResponse.getRequestCharge());
+           logger.info("\n\nEstimated load: {} RU per sec\n\n",
+                response.getRequestCharge() * expectedReadsPerSec + response.getRequestCharge() * expectedWritesPerSec);           
+           return Mono.empty();
+        }).block();
+        
+        Member memberItem = new Member();
+        CosmosAsyncItemResponse<Member> createResponse = peopleContainer.createItem(memberItem).block();
+        logger.info("{} RUs", createResponse.getRequestCharge());
 
-        // peopleContainer.queryItems(sqlItemQuery, options, Member.class)
-        //         .byPage()
-        //         .next()
-        //         .flatMap(page -> {
-        //             logger.info("\n\n" +
-        //                     "{} RUs for\n" +
-        //                     "{}" +
-        //                     "\n\n",
-        //                     page.getRequestCharge(),
-        //                     page.getElements().iterator().next());
-        //             return Mono.empty();
-        //         }).block();
-
-        // int expectedWritesPerSec = 200;
-        // int expectedReadsPerSec = 800;
-        // double readRequestCharge = 0.0;
-        // peopleContainer.readItem("example.document'", new PartitionKey("<Last-Name>"),
-        //         Member.class)
-        //         .flatMap(pointReadResponse -> {
-        //             readRequestCharge = pointReadResponse.getRequestCharge();
-        //             logger.info("\n\n{} RUs\n\n", readRequestCharge);
-        //             return Mono.empty();
-        //         }).block();
-
-        // double writeRequestCharge = 0.0;
-        // Member memberItem = new Member();
-        // CosmosItemResponse<Member> createResponse = peopleContainer.createItem(memberItem).block();
-        // writeRequestCharge = createResponse.getRequestCharge();
-        // logger.info("{} RUs", writeRequestCharge);
-
-        // logger.info("\n\nEstimated load: {} RU per sec\n\n",
-        //         readRequestCharge * expectedReadsPerSec +
-        //                 writeRequestCharge * expectedWritesPerSec);
-
-        // int throughput = peopleContainer.readThroughput().block().getProperties().getManualThroughput();
-        // logger.info("{} RU per sec", throughput);
-        // peopleContainer.replaceThroughput(ThroughputProperties.createManualThroughput(1000)).block();
-
-        client.close();
+        int throughput = peopleContainer.readProvisionedThroughput().block();
+        logger.info("{} RU per sec", throughput);
+        peopleContainer.replaceProvisionedThroughput(1000).block();
+        
+        client.close();        
     }
 }

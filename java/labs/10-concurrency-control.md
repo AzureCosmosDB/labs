@@ -52,11 +52,11 @@ _The SQL API supports optimistic concurrency control (OCC) through HTTP entity t
 
     ```java
     CosmosAsyncClient client = new CosmosClientBuilder()
-                .endpoint(endpointUri)
-                .key(primaryKey)
-                .consistencyLevel(ConsistencyLevel.EVENTUAL)
-                .contentResponseOnWriteEnabled(true)
-                .buildAsyncClient();
+            .setEndpoint(endpointUri)
+            .setKey(primaryKey)
+            .setConnectionPolicy(defaultPolicy)
+            .setConsistencyLevel(ConsistencyLevel.EVENTUAL)
+            .buildAsyncClient();
 
     database = client.getDatabase("NutritionDatabase");
     container = database.getContainer("FoodCollection");            
@@ -73,7 +73,6 @@ _The SQL API supports optimistic concurrency control (OCC) through HTTP entity t
         return Mono.empty();
     }).block();
     ```
-
     This block of code includes a line which shows the current ETag value of the item.
 
    > The ETag header and the current value are included in all response messages.
@@ -100,11 +99,11 @@ _The SQL API supports optimistic concurrency control (OCC) through HTTP entity t
 
     ```java
     CosmosAsyncClient client = new CosmosClientBuilder()
-                .endpoint(endpointUri)
-                .key(primaryKey)
-                .consistencyLevel(ConsistencyLevel.EVENTUAL)
-                .contentResponseOnWriteEnabled(true)
-                .buildAsyncClient();
+            .setEndpoint(endpointUri)
+            .setKey(primaryKey)
+            .setConnectionPolicy(defaultPolicy)
+            .setConsistencyLevel(ConsistencyLevel.EVENTUAL)
+            .buildAsyncClient();
 
     database = client.getDatabase("NutritionDatabase");
     container = database.getContainer("FoodCollection");            
@@ -130,7 +129,10 @@ _The SQL API supports optimistic concurrency control (OCC) through HTTP entity t
 
    ```java
    CosmosItemRequestOptions requestOptions = new CosmosItemRequestOptions();
-   requestOptions.setIfMatchETag(fastFoodResponse.getResponseHeaders().get("etag"));
+   AccessCondition accessCondition = new AccessCondition();
+   accessCondition.setType(AccessConditionType.IF_MATCH);
+   accessCondition.setCondition(fastFoodResponse.getResponseHeaders().get("etag"));
+   requestOptions.setAccessCondition(accessCondition);
    ```
 
 1. Add two new lines of code to retrieve the point-read item and update a property of the retrieved item:
@@ -165,13 +167,15 @@ _The SQL API supports optimistic concurrency control (OCC) through HTTP entity t
       private static CosmosAsyncDatabase database;
       private static CosmosAsyncContainer container;  
       public static void main(String[] args) {
-
+         ConnectionPolicy defaultPolicy = ConnectionPolicy.getDefaultPolicy();
+         defaultPolicy.setPreferredLocations(Lists.newArrayList("<your cosmos db account location>"));
+      
          CosmosAsyncClient client = new CosmosClientBuilder()
-                .endpoint(endpointUri)
-                .key(primaryKey)
-                .consistencyLevel(ConsistencyLevel.EVENTUAL)
-                .contentResponseOnWriteEnabled(true)
-                .buildAsyncClient();
+                  .setEndpoint(endpointUri)
+                  .setKey(primaryKey)
+                  .setConnectionPolicy(defaultPolicy)
+                  .setConsistencyLevel(ConsistencyLevel.EVENTUAL)
+                  .buildAsyncClient();
 
          database = client.getDatabase("NutritionDatabase");
          container = database.getContainer("FoodCollection");
@@ -181,7 +185,10 @@ _The SQL API supports optimistic concurrency control (OCC) through HTTP entity t
                   logger.info("Existing ETag: {}",fastFoodResponse.getResponseHeaders().get("etag"));
 
                   CosmosItemRequestOptions requestOptions = new CosmosItemRequestOptions();
-                  requestOptions.setIfMatchETag(fastFoodResponse.getResponseHeaders().get("etag"));
+                  AccessCondition accessCondition = new AccessCondition();
+                  accessCondition.setType(AccessConditionType.IF_MATCH);
+                  accessCondition.setCondition(fastFoodResponse.getResponseHeaders().get("etag"));
+                  requestOptions.setAccessCondition(accessCondition);
 
                   Food fastFood = fastFoodResponse.getItem();
                   fastFood.addTag(new Tag("Demo"));

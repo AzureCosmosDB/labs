@@ -8,7 +8,7 @@ In this lab, you will use the Java SDK to tune Azure Cosmos DB requests to optim
 
 1. Open Visual Studio Code.
 
-1. If you are completing this lab through Microsoft Hands-on Labs, the CosmosLabs folder will be located at the path: **your\home\directory\Documents\CosmosLabs**. In Visual Studio Code, go to **File > Open Folder >** to get an Open Folder dialog and and use the dialog to open the CosmosLabs folder.
+1. If you are completing this lab through Microsoft Hands-on Labs, the CosmosLabs folder will be located at the path: **your\home\directory\Documents\CosmosLabs**. In Visual Studio Code, go to **File > Open Folder >** to get an Open Folder dialog and and use the dialog to open the CosmosLabs folder. 
 
     ![Open with Visual Studio Code](../media/01-vscode_open_folder.jpg)
 
@@ -40,6 +40,7 @@ In this lab, you will use the Java SDK to tune Azure Cosmos DB requests to optim
 
    > We are now going to implement a sample query to make sure our client connection code works.
 
+
 ## Examining Response Headers
 
 *Azure Cosmos DB returns various response headers that can give you more metadata about your request and what operations occurred on the server-side. The Java SDK exposes many of these headers to you as properties of the ``ResourceResponse<>`` class.*
@@ -50,11 +51,11 @@ In this lab, you will use the Java SDK to tune Azure Cosmos DB requests to optim
 
     ```java
     CosmosAsyncClient client = new CosmosClientBuilder()
-                .endpoint(endpointUri)
-                .key(primaryKey)
-                .consistencyLevel(ConsistencyLevel.EVENTUAL)
-                .contentResponseOnWriteEnabled(true)
-                .buildAsyncClient();
+            .setEndpoint(endpointUri)
+            .setKey(primaryKey)
+            .setConnectionPolicy(defaultPolicy)
+            .setConsistencyLevel(ConsistencyLevel.EVENTUAL)
+            .buildAsyncClient();
 
     database = client.getDatabase("FinancialDatabase");
     peopleContainer = database.getContainer("PeopleCollection");
@@ -62,7 +63,7 @@ In this lab, you will use the Java SDK to tune Azure Cosmos DB requests to optim
 
     client.close();
     ```
-
+    
 1. After the last line of code in the using block, add a new line of code to create a new object and store it in a variable named ``person``:
 
     ```java
@@ -70,7 +71,7 @@ In this lab, you will use the Java SDK to tune Azure Cosmos DB requests to optim
     ```
 
     > The ``Person`` class uses the **Faker** library to generate a fictional person with randomized properties. Here's an example of a fictional person JSON document:
-
+    
     ```json
     {
         "website":"boehm.com",
@@ -104,7 +105,7 @@ In this lab, you will use the Java SDK to tune Azure Cosmos DB requests to optim
 1. Add a new line of code to invoke the ``createItem`` method of the ``CosmosAsyncContainer`` instance using the ``person`` variable as a parameter:
 
     ```java
-    CosmosItemResponse<Person> response = peopleContainer.createItem(person).block();
+    CosmosAsyncItemResponse<Person> response = peopleContainer.createItem(person).block();
     ```
 
 1. After the last line of code in the using block, add a new line of code to print out the value of the **RequestCharge** property of the **ItemResponse<>** instance:
@@ -117,23 +118,25 @@ In this lab, you will use the Java SDK to tune Azure Cosmos DB requests to optim
 
     ```java
     public static void main(String[] args) {
+        ConnectionPolicy defaultPolicy = ConnectionPolicy.getDefaultPolicy();
+        defaultPolicy.setPreferredLocations(Lists.newArrayList("<your cosmos db account location>"));
     
         CosmosAsyncClient client = new CosmosClientBuilder()
-                .endpoint(endpointUri)
-                .key(primaryKey)
-                .consistencyLevel(ConsistencyLevel.EVENTUAL)
-                .contentResponseOnWriteEnabled(true)
+                .setEndpoint(endpointUri)
+                .setKey(primaryKey)
+                .setConnectionPolicy(defaultPolicy)
+                .setConsistencyLevel(ConsistencyLevel.EVENTUAL)
                 .buildAsyncClient();
 
         database = client.getDatabase("FinancialDatabase");
         peopleContainer = database.getContainer("PeopleCollection");
         transactionContainer = database.getContainer("TransactionCollection");
-        
-        Person person = new Person();
-        CosmosItemResponse<Person> response =
-        peopleContainer.createItem(person).block();
-        
-        logger.info("First item insert: {} RUs", response.getRequestCharge());
+
+
+        Person person = new Person(); 
+        CosmosAsyncItemResponse<Person> response = peopleContainer.createItem(person).block();
+
+        logger.info("{} RUs", response.getRequestCharge());
 
         client.close();        
     }
@@ -175,7 +178,7 @@ In this lab, you will use the Java SDK to tune Azure Cosmos DB requests to optim
 
     > This query will return the latest two items added to your container.
 
-1. Click the **Execute Query** button in the query tab to run the query.
+1. Click the **Execute Query** button in the query tab to run the query. 
 
 1. In the **Results** pane, observe the results of your query.
 
@@ -204,11 +207,11 @@ In this lab, you will use the Java SDK to tune Azure Cosmos DB requests to optim
 
 1. Within the **Lab09Main.java** editor tab, locate the ``main`` method.
 
-1. Within the ``main`` method, locate the following line of code:
+1. Within the ``main`` method, locate the following line of code: 
 
     ```java
     Person person = new Person(); 
-    CosmosItemResponse<Person> response = peopleContainer.createItem(person).block();
+    CosmosAsyncItemResponse<Person> response = peopleContainer.createItem(person).block();
 
     logger.info("First item insert: {} RUs", response.getRequestCharge());
     ```
@@ -223,7 +226,7 @@ In this lab, you will use the Java SDK to tune Azure Cosmos DB requests to optim
                                 new Family(new Person(), // spouse
                                             children)); // children
 
-    CosmosItemResponse<Member> response = peopleContainer.createItem(member).block();
+    CosmosAsyncItemResponse<Member> response = peopleContainer.createItem(member).block();
 
     logger.info("Second item insert: {} RUs", response.getRequestCharge());                                            
     ```
@@ -262,7 +265,7 @@ In this lab, you will use the Java SDK to tune Azure Cosmos DB requests to optim
 
     > This query will return the only item in your container with a property named **Children**.
 
-1. Click the **Execute Query** button in the query tab to run the query.
+1. Click the **Execute Query** button in the query tab to run the query. 
 
 1. In the **Results** pane, observe the results of your query.
 
@@ -355,7 +358,7 @@ In this lab, you will use the Java SDK to tune Azure Cosmos DB requests to optim
     SELECT * FROM coll WHERE IS_DEFINED(coll.relatives)
     ```
 
-1. Click the **Execute Query** button in the query tab to run the query.
+1. Click the **Execute Query** button in the query tab to run the query. 
 
     > You will see immediately that you can still determine if the **/relatives** path is defined.
 
@@ -365,9 +368,9 @@ In this lab, you will use the Java SDK to tune Azure Cosmos DB requests to optim
     SELECT * FROM coll WHERE IS_DEFINED(coll.relatives) ORDER BY coll.relatives.Spouse.FirstName
     ```
 
-1. Click the **Execute Query** button in the query tab to run the query.
+1. Click the **Execute Query** button in the query tab to run the query. 
 
-    > This query will fail immediately since this property is not indexed. Keep in mind when defining indexes that only indexed properties can be used in query conditions.
+    > This query will fail immediately since this property is not indexed. Keep in mind when defining indexes that only indexed properties can be used in query conditions. 
 
 1. Now, return to Visual Studio code and run the project.
 
@@ -412,10 +415,10 @@ In this lab, you will use the Java SDK to tune Azure Cosmos DB requests to optim
     ```java
     public static void main(String[] args) {
         CosmosAsyncClient client = new CosmosClientBuilder()
-                .endpoint(endpointUri)
-                .key(primaryKey)
-                .consistencyLevel(ConsistencyLevel.EVENTUAL)
-                .contentResponseOnWriteEnabled(true)
+                .setEndpoint(endpointUri)
+                .setKey(primaryKey)
+                .setConnectionPolicy(defaultPolicy)
+                .setConsistencyLevel(ConsistencyLevel.EVENTUAL)
                 .buildAsyncClient();
 
         database = client.getDatabase("FinancialDatabase");
@@ -434,7 +437,7 @@ In this lab, you will use the Java SDK to tune Azure Cosmos DB requests to optim
     List<Transaction> transactions = new ArrayList<Transaction>();
     for (int i=0; i<100; i++) transactions.add(new Transaction());
     ```
-
+    
 1. Add the following foreach block to iterate over the ``Transaction`` instances:
 
     ```java
@@ -446,7 +449,7 @@ In this lab, you will use the Java SDK to tune Azure Cosmos DB requests to optim
 1. Within the foreach block, add the following line of code to asynchronously create an item and save the result of the creation task to a variable:
 
     ```java
-    CosmosItemResponse<Transaction> result = transactionContainer.createItem(transaction).block();
+    CosmosAsyncItemResponse<Transaction> result = transactionContainer.createItem(transaction).block();
     ```
 
     > The ``createItem`` method of the ``CosmosAsyncContainer`` class takes in an object that you would like to serialize into JSON and store as an item within the specified collection.
@@ -457,18 +460,20 @@ In this lab, you will use the Java SDK to tune Azure Cosmos DB requests to optim
     logger.info("Item Created {}", result.getItem().getId());
     ```
 
-    > The ``CosmosItemResponse`` type has an access method named ``getItem`` that can give you access to the item instance resulting from the operation.
+    > The ``CosmosAsyncItemResponse`` type has an access method named ``getItem`` that can give you access to the item instance resulting from the operation.
 
 1. Your ```main``` method should look like this:
 
     ```java
     public static void main(String[] args) {
-       
+        ConnectionPolicy defaultPolicy = ConnectionPolicy.getDefaultPolicy();
+        defaultPolicy.setPreferredLocations(Lists.newArrayList("your-cosmosdb-account-location"));
+    
         CosmosAsyncClient client = new CosmosClientBuilder()
-                .endpoint(endpointUri)
-                .key(primaryKey)
-                .consistencyLevel(ConsistencyLevel.EVENTUAL)
-                .contentResponseOnWriteEnabled(true)
+                .setEndpoint(endpointUri)
+                .setKey(primaryKey)
+                .setConnectionPolicy(defaultPolicy)
+                .setConsistencyLevel(ConsistencyLevel.EVENTUAL)
                 .buildAsyncClient();
 
         database = client.getDatabase("FinancialDatabase");
@@ -479,7 +484,7 @@ In this lab, you will use the Java SDK to tune Azure Cosmos DB requests to optim
         for (int i=0; i<100; i++) transactions.add(new Transaction());
 
         for (Transaction transaction : transactions) {
-            CosmosItemResponse<Transaction> result = transactionContainer.createItem(transaction).block();
+            CosmosAsyncItemResponse<Transaction> result = transactionContainer.createItem(transaction).block();
             logger.info("Item Created {}", result.getItem().getId());
         }
 
@@ -487,7 +492,7 @@ In this lab, you will use the Java SDK to tune Azure Cosmos DB requests to optim
     }
     ```
 
-    > As a reminder, under the hood the **Faker** library generates a set of test data inside of the ``Transaction`` constructor.
+    > As a reminder, under the hood the **Faker** library generates a set of test data inside of the ``Transaction`` constructor. 
 
 1. Save all of your open editor tabs.
 
@@ -503,7 +508,7 @@ In this lab, you will use the Java SDK to tune Azure Cosmos DB requests to optim
 
     ```java
     for (Transaction transaction : transactions) {
-        CosmosItemResponse<Transaction> result = transactionContainer.createItem(transaction).block();
+        CosmosAsyncItemResponse<Transaction> result = transactionContainer.createItem(transaction).block();
         logger.info("Item Created {}", result.getItem().getId());
     }
     ```
@@ -512,7 +517,7 @@ In this lab, you will use the Java SDK to tune Azure Cosmos DB requests to optim
 
     ```java
     Flux<Transaction> interactionsFlux = Flux.fromIterable(transactions);
-    List<CosmosItemResponse<Transaction>> results = 
+    List<CosmosAsyncItemResponse<Transaction>> results = 
         interactionsFlux.flatMap(interaction -> {
             return transactionContainer.createItem(interaction);
     })
@@ -528,12 +533,14 @@ In this lab, you will use the Java SDK to tune Azure Cosmos DB requests to optim
 
     ```java
     public static void main(String[] args) {
+        ConnectionPolicy defaultPolicy = ConnectionPolicy.getDefaultPolicy();
+        defaultPolicy.setPreferredLocations(Lists.newArrayList("your-cosmosdb-account-location"));
     
         CosmosAsyncClient client = new CosmosClientBuilder()
-                .endpoint(endpointUri)
-                .key(primaryKey)
-                .consistencyLevel(ConsistencyLevel.EVENTUAL)
-                .contentResponseOnWriteEnabled(true)
+                .setEndpoint(endpointUri)
+                .setKey(primaryKey)
+                .setConnectionPolicy(defaultPolicy)
+                .setConsistencyLevel(ConsistencyLevel.EVENTUAL)
                 .buildAsyncClient();
 
         database = client.getDatabase("FinancialDatabase");
@@ -544,7 +551,7 @@ In this lab, you will use the Java SDK to tune Azure Cosmos DB requests to optim
         for (int i=0; i<100; i++) transactions.add(new Transaction());
 
         Flux<Transaction> interactionsFlux = Flux.fromIterable(transactions);
-        List<CosmosItemResponse<Transaction>> results = 
+        List<CosmosAsyncItemResponse<Transaction>> results = 
             interactionsFlux.flatMap(interaction -> {
                 return transactionContainer.createItem(interaction);
         })
@@ -650,10 +657,10 @@ In this lab, you will use the Java SDK to tune Azure Cosmos DB requests to optim
     ```java
     public static void main(String[] args) {
         CosmosAsyncClient client = new CosmosClientBuilder()
-                .endpoint(endpointUri)
-                .key(primaryKey)
-                .consistencyLevel(ConsistencyLevel.EVENTUAL)
-                .contentResponseOnWriteEnabled(true)
+                .setEndpoint(endpointUri)
+                .setKey(primaryKey)
+                .setConnectionPolicy(defaultPolicy)
+                .setConsistencyLevel(ConsistencyLevel.EVENTUAL)
                 .buildAsyncClient();
 
         database = client.getDatabase("FinancialDatabase");
@@ -677,7 +684,8 @@ In this lab, you will use the Java SDK to tune Azure Cosmos DB requests to optim
     > We will not enumerate the full result set. We are only interested in the metrics for the first page of results.
 
     ```java
-    CosmosQueryRequestOptions options = new CosmosQueryRequestOptions();
+    FeedOptions options = new FeedOptions();
+    //optionsA.setMaxDegreeOfParallelism(1);
     transactionContainer.queryItems(sql, options, Transaction.class)
             .byPage()
             .next() // Take only the first page
@@ -744,13 +752,13 @@ In this lab, you will use the Java SDK to tune Azure Cosmos DB requests to optim
 1. Back in the code editor tab, locate the following line of code:
 
      ```java
-     String sql = "SELECT * FROM c";
+     string sql = "SELECT * FROM c";
      ```
 
      Replace that line of code with the following code:
 
      ```java
-     String sql = "SELECT c.id FROM c";
+     string sql = "SELECT c.id FROM c";
      ```
 
      > This new query does not filter the result set.
@@ -770,10 +778,10 @@ In this lab, you will use the Java SDK to tune Azure Cosmos DB requests to optim
     ```java
     public static void main(String[] args) {
         CosmosAsyncClient client = new CosmosClientBuilder()
-                .endpoint(endpointUri)
-                .key(primaryKey)
-                .consistencyLevel(ConsistencyLevel.EVENTUAL)
-                .contentResponseOnWriteEnabled(true)
+                .setEndpoint(endpointUri)
+                .setKey(primaryKey)
+                .setConnectionPolicy(defaultPolicy)
+                .setConsistencyLevel(ConsistencyLevel.EVENTUAL)
                 .buildAsyncClient();
 
         database = client.getDatabase("FinancialDatabase");
@@ -795,7 +803,8 @@ In this lab, you will use the Java SDK to tune Azure Cosmos DB requests to optim
 1. Add the following lines of code to configure options for a query from the variables:
 
     ```java
-    CosmosQueryRequestOptions options = new CosmosQueryRequestOptions();
+    FeedOptions options = new FeedOptions();
+    options.setMaxItemCount(maxItemCount);
     options.setMaxBufferedItemCount(maxBufferedItemCount);
     options.setMaxDegreeOfParallelism(maxDegreeOfParallelism);
     ```
@@ -829,7 +838,7 @@ In this lab, you will use the Java SDK to tune Azure Cosmos DB requests to optim
 
     ```java
     transactionContainer.queryItems(sql, options, Transaction.class)
-            .byPage(maxItemCount)
+            .byPage()
             .flatMap(page -> {
             //Don't do anything with the query page results
             return Mono.empty();
@@ -1012,10 +1021,10 @@ In this lab, you will use the Java SDK to tune Azure Cosmos DB requests to optim
     ```java
     public static void main(String[] args) {
         CosmosAsyncClient client = new CosmosClientBuilder()
-                .endpoint(endpointUri)
-                .key(primaryKey)
-                .consistencyLevel(ConsistencyLevel.EVENTUAL)
-                .contentResponseOnWriteEnabled(true)
+                .setEndpoint(endpointUri)
+                .setKey(primaryKey)
+                .setConnectionPolicy(defaultPolicy)
+                .setConsistencyLevel(ConsistencyLevel.EVENTUAL)
                 .buildAsyncClient();
 
         database = client.getDatabase("FinancialDatabase");
@@ -1026,7 +1035,7 @@ In this lab, you will use the Java SDK to tune Azure Cosmos DB requests to optim
     }
     ```
 
-1. Add the following line of code that will store a SQL query in a string variable (replacing **example.document** with the **id** value that you noted earlier):
+1. Add the following line of code that will store a SQL query in a string variable (replacing **example.document** with the **id ** value that you noted earlier):
 
     ```java
     String sql = "SELECT TOP 1 * FROM c WHERE c.id = 'example.document'";
@@ -1037,7 +1046,7 @@ In this lab, you will use the Java SDK to tune Azure Cosmos DB requests to optim
 1. Add the following line of code to create an item query instance and get the first page of results. We'll also print out the value of the **RequestCharge** property for the page and then the content of the retrieved item:
 
     ```java
-    CosmosQueryRequestOptions options = new CosmosQueryRequestOptions();
+    FeedOptions options = new FeedOptions();
 
     peopleContainer.queryItems(sql, options, Member.class)
             .byPage()
@@ -1068,10 +1077,10 @@ In this lab, you will use the Java SDK to tune Azure Cosmos DB requests to optim
     ```java
     public static void main(String[] args) {
         CosmosAsyncClient client = new CosmosClientBuilder()
-                .endpoint(endpointUri)
-                .key(primaryKey)
-                .consistencyLevel(ConsistencyLevel.EVENTUAL)
-                .contentResponseOnWriteEnabled(true)
+                .setEndpoint(endpointUri)
+                .setKey(primaryKey)
+                .setConnectionPolicy(defaultPolicy)
+                .setConsistencyLevel(ConsistencyLevel.EVENTUAL)
                 .buildAsyncClient();
 
         database = client.getDatabase("FinancialDatabase");
@@ -1085,17 +1094,13 @@ In this lab, you will use the Java SDK to tune Azure Cosmos DB requests to optim
 1. Add the following code to use the ```readItem``` method of the ```CosmosAsyncContainer``` class to retrieve an item using the unique id and the partition key set to the last name from the previous step. Add a line to print out the value of the **RequestCharge** property:
 
     ```java
-    int expectedWritesPerSec = 200;
-    int expectedReadsPerSec = 800;
-    double readRequestCharge = 0.0;
     peopleContainer.readItem("example.document", new PartitionKey("<LastName>"), Member.class)
     .flatMap(response -> {
-        readRequestCharge = response.getRequestCharge();
-        logger.info("\n\n{} RUs\n\n",readRequestCharge);
+        logger.info("\n\n{} RUs\n\n",response.getRequestCharge());
         return Mono.empty();
     }).block();
     ```
-
+   
 1. Save all of your open editor tabs.
 
 1. Run the project.
@@ -1135,27 +1140,31 @@ In this lab, you will use the Java SDK to tune Azure Cosmos DB requests to optim
 1. Following that line, add the following code to use the ```createItem``` method of the ```CosmosAsyncContainer``` class to add a new item and print out the value of the **RequestCharge** property:
 
     ```java
-    double writeRequestCharge = 0.0;
     Member member = new Member();
-    CosmosItemResponse<Member> createResponse = peopleContainer.createItem(member).block();
-    writeRequestCharge = createResponse.getRequestCharge();
-    logger.info("{} RUs", writeRequestCharge);
+    CosmosAsyncItemResponse<Member> createResponse = peopleContainer.createItem(member).block();
+    logger.info("{} RUs", createResponse.getRequestCharge());
     ```
 
-1. Now, find the following line after the ```createItem``` Reactive Stream
+1. Now, find the following line inside the ```readItem``` Reactive Stream
 
     ```java
     logger.info("\n\n{} RUs\n\n",response.getRequestCharge());
     ```
+   Above this line add the following lines of code to create variables to represent the estimated workload for our application:
+
+    ```java
+    int expectedWritesPerSec = 200;
+    int expectedReadsPerSec = 800;
+    ```
+
+    > These types of numbers could come from planning a new application or tracking actual usage of an existing one. Details of determining workload are outside the scope of this lab.   
 
    Below this line add the following line of code to print out the estimated throughput needs of our application based on our test queries:
 
     ```java
     logger.info("\n\nEstimated load: {} RU per sec\n\n",
-                    readRequestCharge * expectedReadsPerSec + writeRequestCharge * expectedWritesPerSec);
+                    response.getRequestCharge() * expectedReadsPerSec + response.getRequestCharge() * expectedWritesPerSec);
     ```
-
-    > These types of numbers could come from planning a new application or tracking actual usage of an existing one. Details of determining workload are outside the scope of this lab.
 
 1. Save all of your open editor tabs.
 
@@ -1176,10 +1185,10 @@ In this lab, you will use the Java SDK to tune Azure Cosmos DB requests to optim
     ```java
     public static void main(String[] args) {
         CosmosAsyncClient client = new CosmosClientBuilder()
-                .endpoint(endpointUri)
-                .key(primaryKey)
-                .consistencyLevel(ConsistencyLevel.EVENTUAL)
-                .contentResponseOnWriteEnabled(true)
+                .setEndpoint(endpointUri)
+                .setKey(primaryKey)
+                .setConnectionPolicy(defaultPolicy)
+                .setConsistencyLevel(ConsistencyLevel.EVENTUAL)
                 .buildAsyncClient();
 
         database = client.getDatabase("FinancialDatabase");
@@ -1193,7 +1202,7 @@ In this lab, you will use the Java SDK to tune Azure Cosmos DB requests to optim
 1. Add the following code to retrieve the current RU/sec setting for the container:
 
     ```java
-    int throughput = peopleContainer.readThroughput().block().getProperties().getManualThroughput();
+    int throughput = peopleContainer.readProvisionedThroughput().block();
     ```
 
     > Note that the type of the **Throughput** property is a nullable value. Provisioned throughput can be set either at the container or database level. If set at the database level, this property read from the **Container** will return null. When set at the container level, the same method on **Database** will return null.
@@ -1207,10 +1216,10 @@ In this lab, you will use the Java SDK to tune Azure Cosmos DB requests to optim
 1. Add the following code to update the RU/sec setting for the container:
 
     ```java
-    peopleContainer.replaceThroughput(ThroughputProperties.createManualThroughput(1000)).block();
+    peopleContainer.replaceProvisionedThroughput(1000).block();
     ```
 
-    > Although the overall minimum throughput that can be set is 400 RU/s, specific containers or databases may have higher limits depending on size of stored data, previous maximum throughput settings, or number of containers in a database. Trying to set a value below the available minimum will cause an exception here.
+    > Although the overall minimum throughput that can be set is 400 RU/s, specific containers or databases may have higher limits depending on size of stored data, previous maximum throughput settings, or number of containers in a database. Trying to set a value below the available minimum will cause an exception here. 
 
 1. Save all of your open editor tabs.
 

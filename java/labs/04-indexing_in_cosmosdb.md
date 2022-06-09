@@ -538,4 +538,4 @@ You will not need the **VolcanoContainer** during additional lab sections. You s
 3. Confirm the container's name and delete the container.
 4. Close your browser window. You have now completed the indexing lab section.
 
-> If this is your final lab, follow the steps in [Removing Lab Assets](11-cleaning_up.md) to remove all lab resources.
+> If this is your final lab, follow the steps in [Removing Lab Assets](11-cleaning_up.md) to remove all lab resources. 
