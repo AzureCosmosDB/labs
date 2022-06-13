@@ -304,7 +304,7 @@ Now that we have our first Change Feed consumer, we're ready to run a test and c
 
 1. Right-click and run the project as you did previously.
 
-1. Once the function starts running you'll see the following messages in your console:
+1. Once the application starts running you'll see the following messages in your console:
 
    ```sh
    Started Change Feed Processor
@@ -350,7 +350,7 @@ One of the interesting features of Azure Cosmos DB is its change feed. The chang
 
 ### Create a Java Azure Functions Project
 
-Azure Functions provide a quick and easy way to hook up with the Cosmos DB Change Feed in a way that is scalable out of the box. You'll start by setting up Java Azure Functions maven project.
+In this exercise, we will implement Java SDK's change feed processor library to read Azure Cosmos DB's change feed in in a scalable and fault-tolerant way. Azure Functions provide a quick and easy way to hook up with the Cosmos DB Change Feed, by implementing the change feed processor out of the box. You'll start by setting up Java Azure Functions maven project.
 
 #### Configure your local environment
 

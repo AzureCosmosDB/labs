@@ -68,11 +68,11 @@ You will use **Azure Data Factory (ADF)** to import the JSON array stored in the
 
     ![Git options ADF](../media/03-adf_git_conf.jpg)
 
-1. After creation, open your newly created Data Factory. Select **Open Azure Data Factory Studio** and you will launch ADF. You should see a screen similar to the screenshot below. Select **Ingest Data**. We will be using ADF for a one-time copy of data from a source JSON file on Azure Blob Storage to a database in Cosmos DB’s SQL API. ADF can also be used for more frequent data transfers from Cosmos DB to other data stores.
+1. After the resource is deployed, open your newly created Data Factory. Select **Open Azure Data Factory Studio** and you will launch ADF. You should see a screen similar to the screenshot below. Select **Ingest Data**. We will be using ADF for a one-time copy of data from a source JSON file on Azure Blob Storage to a database in Cosmos DB’s SQL API. ADF can also be used for more frequent data transfers from Cosmos DB to other data stores.
     ![ADF studio](../media/03-adf_studio.jpg)
     ![Ingest data](../media/03-adf_ingest_data.jpg)
 
-1. Edit basic properties for this data copy. Select **Built-in copy task** option and chose **Run once now**.
+1. Edit basic properties for this data copy. Select **Built-in copy task** option and choose **Run once now**.
 
    ![adf-properties](../media/03-adf_copy_data_props.jpg)
 
@@ -82,6 +82,8 @@ You will use **Azure Data Factory (ADF)** to import the JSON array stored in the
 
     ![adf blob](../media/03-adf_blob2.jpg)
 
+    > To learn more about different data sources supported by Azure Data Factory please go through this [doc](https://docs.microsoft.com/en-us/azure/data-factory/quickstart-create-data-factory-copy-data-tool)
+
 1. Name the source **NutritionJson** and select **SAS URI** as the Authentication method. Please use the following SAS URI for read-only access to this Blob Storage container:
 
     `https://cosmoslabsstorageaccount.blob.core.windows.net/nutrition-data?si=container-list-read-policy&spr=https&sv=2021-06-08&sr=c&sig=jGrmrokYikbgbuW9we2am%2BwAq%2BC%2BxfZcPYswOeSQpAU%3D`
@@ -90,7 +92,7 @@ You will use **Azure Data Factory (ADF)** to import the JSON array stored in the
 
 1. Click on **Create** to create the connection.
 
-1. In the **File or Folder** textbox, enter ``nutirion-data`` and then click on **Browse** to select the **nutrition-data** folder. Finally select **NutritionData.json** file.
+1. In the **File or Folder** textbox, enter the folder name as ``nutirion-data`` and then click on **Browse** to select the **nutrition-data** folder. Finally select **NutritionData.json** file.
 
     ![browse adf](../media/03-adf_browse.jpg)
 

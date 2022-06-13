@@ -277,7 +277,9 @@ One of the interesting features of Azure Cosmos DB is its change feed. The chang
 
 ### Create a .NET Core Azure Functions Project
 
-Azure Functions provide a quick and easy way to hook up with the Cosmos DB Change Feed in a way that is scalable out of the box. You'll start by setting up a.NET Core Azure Functions project
+In this exercise, we will implement .NET SDK's change feed processor library to read Azure Cosmos DB's change feed in in a scalable and fault-tolerant way. Azure Functions provide a quick and easy way to hook up with the Cosmos DB Change Feed, by implementing the change feed processor out of the box. You'll start by setting up a.NET Core Azure Functions project.
+
+> For more information, please read the [doc](https://docs.microsoft.com/azure/cosmos-db/sql/change-feed-processor).
 
 1. Open a terminal window and navigate to the Lab08 folder you've been using for this lab.
 
