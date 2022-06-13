@@ -8,7 +8,7 @@ _Previously we used the Azure Portal's **Data Explorer** to query an Azure Cosmo
 
 1. Open Visual Studio Code.
 
-1. If you are completing this lab through Microsoft Hands-on Labs, the CosmosLabs folder will be located at the path: **your\home\directory\Documents\CosmosLabs**. In Visual Studio Code, go to **File > Open Folder >** to get an Open Folder dialog and and use the dialog to open the CosmosLabs folder. 
+1. If you are completing this lab through Microsoft Hands-on Labs, the CosmosLabs folder will be located at the path: **your\home\directory\Documents\CosmosLabs**. In Visual Studio Code, go to **File > Open Folder >** to get an Open Folder dialog and and use the dialog to open the CosmosLabs folder.
 
     ![Open with Visual Studio Code](../media/01-vscode_open_folder.jpg)
 
@@ -52,11 +52,11 @@ _```readItem()``` allows a single item to be retrieved from Cosmos DB by its ID.
 
     ```java
     CosmosAsyncClient client = new CosmosClientBuilder()
-            .setEndpoint(endpointUri)
-            .setKey(primaryKey)
-            .setConnectionPolicy(defaultPolicy)
-            .setConsistencyLevel(ConsistencyLevel.EVENTUAL)
-            .buildAsyncClient();
+                .endpoint(endpointUri)
+                .key(primaryKey)
+                .consistencyLevel(ConsistencyLevel.EVENTUAL)
+                .contentResponseOnWriteEnabled(true)
+                .buildAsyncClient();
 
     database = client.getDatabase("NutritionDatabase");
     container = database.getContainer("FoodCollection");            
@@ -91,9 +91,9 @@ _```readItem()``` allows a single item to be retrieved from Cosmos DB by its ID.
 
 1. Click the **🗙** symbol to close the terminal pane.
 
-## Execute a Query Against a Single Azure Cosmos DB Partition 
+## Execute a Query Against a Single Azure Cosmos DB Partition
 
-1.  Find the last block of code you wrote
+1. Find the last block of code you wrote
 
     ```java
     container.readItem("19130", new PartitionKey("Sweets"), Food.class)
@@ -108,7 +108,7 @@ _```readItem()``` allows a single item to be retrieved from Cosmos DB by its ID.
 
     and add this section's code after the block above.
 
-1.  Define the following SQL Query string:
+1. Define the following SQL Query string:
 
     ```java
     String sqlA = "SELECT f.description, f.manufacturerName, f.servings FROM foods f WHERE f.foodGroup = 'Sweets' and IS_DEFINED(f.description) and IS_DEFINED(f.manufacturerName) and IS_DEFINED(f.servings)";
@@ -119,7 +119,7 @@ _```readItem()``` allows a single item to be retrieved from Cosmos DB by its ID.
 1. Add the following code to execute the query and page through the ```Flux<FeedResponse<Food>>``` which is returned:
 
     ```java
-    FeedOptions optionsA = new FeedOptions();
+    CosmosQueryRequestOptions optionsA = new CosmosQueryRequestOptions();
     optionsA.setMaxDegreeOfParallelism(1);
     container.queryItems(sqlA, optionsA, Food.class).byPage()
             .flatMap(page -> {
@@ -127,7 +127,7 @@ _```readItem()``` allows a single item to be retrieved from Cosmos DB by its ID.
             return Mono.empty();
     }).blockLast();    
     ```
-    
+
     Notice that the Reactive Stream operation starting with ```.flatMap(page -> {``` is empty, so really nothing is being done with the query response pages. Above ```return Mono.empty();```, add the following lines to process the query response pages:
 
     ```java
@@ -151,7 +151,7 @@ _```readItem()``` allows a single item to be retrieved from Cosmos DB by its ID.
                     "'Sweets' and IS_DEFINED(f.description) and " + 
                     "IS_DEFINED(f.manufacturerName) and IS_DEFINED(f.servings)";
 
-    FeedOptions optionsA = new FeedOptions();
+    CosmosQueryRequestOptions optionsA = new CosmosQueryRequestOptions();
     optionsA.setMaxDegreeOfParallelism(1);
     container.queryItems(sqlA, optionsA, Food.class).byPage()
             .flatMap(page -> {
@@ -168,13 +168,13 @@ _```readItem()``` allows a single item to be retrieved from Cosmos DB by its ID.
 
             return Mono.empty();
     }).blockLast();
-    ```    
+    ```
 
 1. Save all of your open editor tabs.
 
 1. In the **Explorer** pane, right-click **Lab05Main.java** and choose the **Run** menu option.
 
-1.  The code will loop through each result of the SQL query. Within the logger output in the terminal, you should see a message similar to the following:
+1. The code will loop through each result of the SQL query. Within the logger output in the terminal, you should see a message similar to the following:
 
     ```sh
     ...
@@ -198,7 +198,7 @@ _```readItem()``` allows a single item to be retrieved from Cosmos DB by its ID.
                     "'Sweets' and IS_DEFINED(f.description) and " + 
                     "IS_DEFINED(f.manufacturerName) and IS_DEFINED(f.servings)";
 
-    FeedOptions optionsA = new FeedOptions();
+    CosmosQueryRequestOptions optionsA = new CosmosQueryRequestOptions();
     optionsA.setMaxDegreeOfParallelism(1);
     container.queryItems(sqlA, optionsA, Food.class).byPage()
             .flatMap(page -> {
@@ -221,7 +221,7 @@ _```readItem()``` allows a single item to be retrieved from Cosmos DB by its ID.
                     "'Sweets' and IS_DEFINED(f.description) and " + 
                     "IS_DEFINED(f.manufacturerName) and IS_DEFINED(f.servings)";
 
-    FeedOptions optionsA = new FeedOptions();
+    CosmosQueryRequestOptions optionsA = new CosmosQueryRequestOptions();
     optionsA.setMaxDegreeOfParallelism(1);
     container.queryItems(sqlA, optionsA, Food.class).byPage()
             .flatMap(page -> {
@@ -251,7 +251,7 @@ _```readItem()``` allows a single item to be retrieved from Cosmos DB by its ID.
 1. For this query, we will run with greater concurrency and allow a max item count of 100. Find this section of the duplicate query code
 
     ```java
-    FeedOptions optionsA = new FeedOptions();
+    CosmosQueryRequestOptions optionsA = new CosmosQueryRequestOptions();
     optionsA.setMaxDegreeOfParallelism(1);
     container.queryItems(sqlA, optionsA, Food.class).byPage()
     ```
@@ -259,10 +259,9 @@ _```readItem()``` allows a single item to be retrieved from Cosmos DB by its ID.
     and replace it with
 
     ```java
-    FeedOptions optionsB = new FeedOptions();
+    CosmosQueryRequestOptions optionsB = new CosmosQueryRequestOptions();
     optionsB.setMaxDegreeOfParallelism(5);
-    optionsB.setMaxItemCount(100);
-    container.queryItems(sqlB, optionsB, Food.class).byPage()
+    container.queryItems(sqlB, optionsB, Food.class).byPage(100)
     ```
 
     > Take note of the differences in this call to **queryItems** as compared to the previous section. **maxDegreeOfParallelism** is set to `5` and we are limiting the **maxItemCount** to `100` items. This will result in paging if there are more than 100 items that match the query.
@@ -307,7 +306,7 @@ _```readItem()``` allows a single item to be retrieved from Cosmos DB by its ID.
 
 1. In the **Explorer** pane, right-click **Lab05Main.java** and choose the **Run** menu option.
 
-1.  Within the logger output, you should see a number of new results, each separated by the a line indicating the page, as follows:
+1. Within the logger output, you should see a number of new results, each separated by the a line indicating the page, as follows:
 
     ```
         ---Page #0016---
@@ -319,4 +318,4 @@ _```readItem()``` allows a single item to be retrieved from Cosmos DB by its ID.
 
 1. Click the **🗙** symbol to close the terminal pane.
 
-> If this is your final lab, follow the steps in [Removing Lab Assets](11-cleaning_up.md) to remove all lab resources. 
+> If this is your final lab, follow the steps in [Removing Lab Assets](11-cleaning_up.md) to remove all lab resources.

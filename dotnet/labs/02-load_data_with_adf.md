@@ -93,14 +93,13 @@ You do not need to do Steps 1-4 in this section and can proceed to Step 4 by ope
 
 1. Name the source **NutritionJson** and select **SAS URI** as the Authentication method. Please use the following SAS URI for read-only access to this Blob Storage container:
 
-    `https://cosmosdblabsv3.blob.core.windows.net/?sv=2018-03-28&ss=bfqt&srt=sco&sp=rlp&se=2022-01-01T04:55:28Z&st=2019-08-05T20:02:28Z&spr=https&sig=%2FVbismlTQ7INplqo6WfU8o266le72o2bFdZt1Y51PZo%3D`
+     `https://cosmoslabsstorageaccount.blob.core.windows.net/nutrition-data?si=container-list-read-policy&spr=https&sv=2021-06-08&sr=c&sig=jGrmrokYikbgbuW9we2am%2BwAq%2BC%2BxfZcPYswOeSQpAU%3D`
 
     ![The New linked service dialog is displayed](../media/03-adf_connecttoblob.jpg "Enter the SAS url in the dialog")
 
 1. Select **Create**
 1. Select **Next**
-1. Select **Browse**, then double-click to open the **nutritiondata** folder
-1. Select the **NutritionData.json** file, then select **Choose**
+1. In the **File or Folder** textbox, enter the folder name as ``nutirion-data`` and then click on **Browse** to select the **nutrition-data** folder. Finally select **NutritionData.json** file.
 
     ![The nutritiiondata folder is displayed](../media/03-adf_choosestudents.jpg "Select the NutritionData.json file")
 

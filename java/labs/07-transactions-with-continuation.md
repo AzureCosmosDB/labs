@@ -172,16 +172,13 @@ _You will now implement stored procedures that may execute longer than the bound
 
    ```java
     public static void main(String[] args) {
-        ConnectionPolicy defaultPolicy = ConnectionPolicy.getDefaultPolicy();
-        defaultPolicy.setPreferredLocations(Lists.newArrayList("<your cosmos db account location>"));
     
-        CosmosAsyncClient client = new CosmosClientBuilder()
-                .setEndpoint(endpointUri)
-                .setKey(primaryKey)
-                .setConnectionPolicy(defaultPolicy)
-                .setConsistencyLevel(ConsistencyLevel.EVENTUAL)
+         CosmosAsyncClient client = new CosmosClientBuilder()
+                .endpoint(endpointUri)
+                .key(primaryKey)
+                .consistencyLevel(ConsistencyLevel.EVENTUAL)
+                .contentResponseOnWriteEnabled(true)
                 .buildAsyncClient();
-
          // <== Start adding code here
    ```
 
@@ -231,7 +228,7 @@ _You will now implement stored procedures that may execute longer than the bound
    CosmosStoredProcedureRequestOptions options = new CosmosStoredProcedureRequestOptions();
    options.setPartitionKey(new PartitionKey("Energy Bars"));
 
-   Object sprocArgs[] = new Object[] {foods.subList(pointer,foods.size())};
+   List<Object> sprocArgs = new ArrayList<Object>(foods.subList(pointer,foods.size()));
 
    container.getScripts()
             .getStoredProcedure("bulkUpload")
@@ -262,15 +259,13 @@ _You will now implement stored procedures that may execute longer than the bound
       private static CosmosAsyncContainer container;  
       private static int pointer = 0;
       public static void main(String[] args) {
-         ConnectionPolicy defaultPolicy = ConnectionPolicy.getDefaultPolicy();
-         defaultPolicy.setPreferredLocations(Lists.newArrayList("<your cosmos db account location>"));
       
          CosmosAsyncClient client = new CosmosClientBuilder()
-                  .setEndpoint(endpointUri)
-                  .setKey(primaryKey)
-                  .setConnectionPolicy(defaultPolicy)
-                  .setConsistencyLevel(ConsistencyLevel.EVENTUAL)
-                  .buildAsyncClient();
+            .endpoint(endpointUri)
+            .key(primaryKey)
+            .consistencyLevel(ConsistencyLevel.EVENTUAL)
+            .contentResponseOnWriteEnabled(true)
+            .buildAsyncClient();
 
          database = client.getDatabase("NutritionDatabase");
          container = database.getContainer("FoodCollection");
@@ -296,7 +291,7 @@ _You will now implement stored procedures that may execute longer than the bound
                CosmosStoredProcedureRequestOptions options = new CosmosStoredProcedureRequestOptions();
                options.setPartitionKey(new PartitionKey("Energy Bars"));
       
-               Object sprocArgs[] = new Object[] {foods.subList(pointer,foods.size())};
+               List<Object> sprocArgs = Arrays.asList(new Object[] {foods.subList(pointer,foods.size())});
 
                container.getScripts()
                      .getStoredProcedure("bulkUpload")
@@ -380,15 +375,15 @@ _You will now implement stored procedures that may execute longer than the bound
 
    ```java
     public static void main(String[] args) {
-        ConnectionPolicy defaultPolicy = ConnectionPolicy.getDefaultPolicy();
-        defaultPolicy.setPreferredLocations(Lists.newArrayList("<your cosmos db account location>"));
-    
-        CosmosAsyncClient client = new CosmosClientBuilder()
-                .setEndpoint(endpointUri)
-                .setKey(primaryKey)
-                .setConnectionPolicy(defaultPolicy)
-                .setConsistencyLevel(ConsistencyLevel.EVENTUAL)
-                .buildAsyncClient();
+         CosmosAsyncClient client = new CosmosClientBuilder()
+            .endpoint(endpointUri)
+            .key(primaryKey)
+            .consistencyLevel(ConsistencyLevel.EVENTUAL)
+            .contentResponseOnWriteEnabled(true)
+            .buildAsyncClient();
+        
+         database = client.getDatabase("NutritionDatabase");
+         container = database.getContainer("FoodCollection");
 
          // <== Delete and then start adding code here
    ```
@@ -412,7 +407,7 @@ _You will now implement stored procedures that may execute longer than the bound
       CosmosStoredProcedureRequestOptions options = new CosmosStoredProcedureRequestOptions();
       options.setPartitionKey(new PartitionKey("Energy Bars"));
 
-      Object sprocArgs[] = new Object[] {query};
+      List<Object> sprocArgs = Arrays.asList(new Object[] {query});
 
       container.getScripts()
                .getStoredProcedure("bulkDelete")
