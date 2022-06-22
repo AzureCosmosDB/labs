@@ -1,0 +1,88 @@
+nav.navbar-cosmos {
+    background-color: #2b3137;
+    border-color: #1f2327;
+}
+
+.cosmos-background {
+    background-color: #48a0b8;
+}
+
+article.home {
+    
+    h1 {
+        display: none;
+    }
+
+}
+
+article.workshop {
+    counter-reset: exercise;
+    
+    h1 {
+        display: none;
+    }
+
+    h2 {
+        counter-reset: task;
+
+        &:before {
+            counter-increment: exercise;
+            content: "Exercise " counter(exercise) ": ";
+        }
+    }
+
+    h3 {
+        &:before {
+            counter-increment: task;
+            content: "Task " counter(task, upper-roman) ": ";
+        }
+    }
+}
+
+.hero-content {
+    padding: 35px 15px;
+    color: #fff;
+    font-family: "Segoe UI Light", "Segoe UI", Tahoma, Arial, sans-serif;
+    font-weight: 400;
+
+    h1 {
+        margin: 0 0 16px;
+        font-size: 30pt;
+        line-height: 32pt;
+    }
+
+    p {
+        margin: 10px 0 6px;
+        font-size: 13pt;
+        line-height: 15pt;
+    }
+
+    ul {
+        li {
+            margin: 10px 0 6px;
+            font-size: 13pt;
+            line-height: 15pt;
+
+            a {
+                color: white;
+                text-decoration: underline;
+            }
+        }
+    }
+}
+
+.text-cosmos {
+    color: #00bcf2;
+    font-family: "Segoe UI", Tahoma, Arial, sans-serif;
+    font-size: 18px;
+    line-height: 20px;
+    float: left;
+    height: 50px;
+    padding: 15px 15px;
+    background-color: transparent;
+    background-image: url(../img/logo.png);
+    padding-left: 50px;
+    background-repeat: no-repeat;
+    background-size: 45px;
+    background-position: 0 5px;
+}
