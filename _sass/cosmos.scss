@@ -29,7 +29,9 @@ article.workshop {
             counter-increment: exercise;
             content: "Exercise " counter(exercise) ": ";
         }
+    }
 
+    h3 {
         &:before {
             counter-increment: task;
             content: "Task " counter(task, upper-roman) ": ";
