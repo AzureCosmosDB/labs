@@ -1,6 +1,27 @@
-article {
+nav.navbar-cosmos {
+    background-color: #2b3137;
+    border-color: #1f2327;
+}
+
+.cosmos-background {
+    background-color: #48a0b8;
+}
+
+article.home {
+    
+    h1 {
+        display: none;
+    }
+
+}
+
+article.workshop {
     counter-reset: exercise;
     
+    h1 {
+        display: none;
+    }
+
     h2 {
         counter-reset: task;
 
@@ -13,21 +34,6 @@ article {
             counter-increment: task;
             content: "Task " counter(task, upper-roman) ": ";
         }
-    }
-}
-
-nav.navbar-cosmos {
-    background-color: #2b3137;
-    border-color: #1f2327;
-}
-
-.cosmos-background {
-    background-color: #48a0b8;
-}
-
-article.workshop {
-    h1 {
-        display: none;
     }
 }
 

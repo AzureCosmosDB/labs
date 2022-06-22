@@ -1,4 +1,4 @@
-# Workshop PowerPoint Deck
+# Azure Cosmos DB Workshop
 
 ## Two Day Suggested Schedule
 
