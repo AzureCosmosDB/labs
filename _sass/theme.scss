@@ -1,0 +1,348 @@
+@import "code";
+@import "headers";
+@import "cosmos";
+
+dl,
+ol,
+p,
+ul {
+    margin-top: 1rem;
+}
+
+body {
+    position: relative;
+}
+
+body,
+html {
+    font-family: segoe-ui_normal, "Segoe UI", Segoe, "Segoe WP", "Helvetica Neue", Helvetica, sans-serif;
+}
+
+p {
+    margin-bottom: 0;
+    font-family: "Segoe UI Light","Segoe UI",Tahoma,Arial,sans-serif;
+    font-weight: 400;
+    font-size: 12pt;
+    line-height: 15pt;
+}
+
+a:active,
+a:hover,
+a:visited {
+    color: #0078d7;
+}
+
+a {
+    word-wrap: break-word;
+}
+
+main ol ol,
+main ul ul {
+    margin: 0 0 0 20px;
+}
+
+main ul ul>li {
+    list-style-type: circle;
+}
+
+main ul ul ul>li {
+    list-style-type: square;
+}
+
+main ol ol>li {
+    list-style-type: lower-alpha;
+}
+
+main ol ol ol>li {
+    list-style-type: lower-roman;
+}
+
+html {
+    -ms-text-size-adjust: 100%;
+    -webkit-text-size-adjust: 100%;
+    box-sizing: border-box;
+    height: 100%;
+}
+
+body {
+    background: #fff;
+    color: #222;
+    font-size: 100%;
+    line-height: 160%;
+    min-height: 100%;
+    height: auto !important;
+}
+
+a {
+    color: #0050C5;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+small {
+    font-size: 11px;
+}
+
+dl,
+ol,
+ul {
+    margin-bottom: 1rem;
+}
+
+blockquote {
+    border-color: #bff1ff;
+    color: inherit;
+    font-size: smaller;
+    padding: 20px;
+    margin-top: 15px;
+    border-radius: 6px;
+}
+
+blockquote:before {
+    content: "\0024D8\00a0Note";
+    color: #0094bf;
+    font-size: small;
+    font-family: segoe-ui_light, "Segoe UI Light", "Segoe WP", "Helvetica Neue", Helvetica, sans-serif;
+}
+
+article img {
+    max-width: 100%;    
+    border-color: #4189A2;
+    border-style: solid;
+    border-width: 1px;
+}
+
+.bg-black {
+    background-color: #000;
+}
+
+.text-black {
+    color: #000;
+}
+
+.bg-azure {
+    background-color: #0078d7;
+}
+
+.bg-note,
+blockquote {
+    background-color: #d9f6ff;
+}
+
+.text-azure {
+    color: #0078d7;
+}
+
+h5,
+h6 {
+    letter-spacing: 1px;
+}
+
+h4,
+h5,
+h6 {
+    margin-top: 36px;
+    margin-bottom: 6px;
+}
+
+h1,
+h2 {
+    margin-bottom: 0;
+}
+
+h1,
+h2 {
+    font-family: segoe-ui_light, "Segoe UI Light", "Segoe WP", "Helvetica Neue", Helvetica, sans-serif;
+    font-size: 2.5rem;
+    margin-top: 10px;
+}
+
+h3,
+h4,
+h5,
+h6 {
+    font-family: segoe-ui_semibold, "Segoe UI Semibold", "Segoe WP", "Helvetica Neue", Helvetica, sans-serif;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    font-style: normal;
+    font-weight: 300;
+    line-height: 1.3;
+    text-rendering: optimizeLegibility;
+    word-wrap: break-word;
+}
+
+h2 {
+    font-size: 1.75rem;
+    margin-top: 32px;
+}
+
+h3 {
+    font-size: 1.188rem;
+    margin-top: 30px;
+    margin-bottom: 18px;
+}
+
+h4 {
+    font-size: 1rem;
+}
+
+h5 {
+    font-size: 0.9rem;
+}
+
+h6 {
+    font-size: 0.8rem;
+}
+
+.title {
+    font-style: normal;
+    font-weight: 300;
+    line-height: 1.3;
+    text-rendering: optimizeLegibility;
+    word-wrap: break-word;
+    margin-bottom: 10px;
+    font-size: 1.75rem;
+    margin-top: 32px;
+    font-family: segoe-ui_light, "Segoe UI Light", "Segoe WP", "Helvetica Neue", Helvetica, sans-serif;
+}
+
+nav.toc {
+    margin-top: 24px !important;
+    overflow-y: auto !important;
+    flex-grow: 1 !important;
+}
+
+nav.toc a.nav-link,
+nav.toc li.nav-item,
+nav.toc ul.nav {
+    outline: #000 solid 0 !important;
+    -moz-box-shadow: inset 0 0 0 0 #000 !important;
+    -webkit-box-shadow: inset 0 0 00 #000 !important;
+    box-shadow: inset 0 0 0 0 #000 !important;
+}
+
+.toc a:focus,
+.toc li:focus,
+.toc ul:focus {
+    -moz-box-shadow: inset 0 0 0 2px #0050C5;
+    -webkit-box-shadow: inset 0 0 0 2px #0050C5;
+    box-shadow: inset 0 0 0 2px #0050C5;
+}
+
+nav.toc ul.nav {
+    margin-bottom: 0;
+    padding-left: 10px;
+}
+
+nav.toc>ul.nav {
+    display: block;
+    margin-left: 0;
+    padding-left: 0;
+}
+
+nav.toc>ul.nav a.nav-link {
+    padding: 0.75rem 0.25rem;
+}
+
+nav.toc>ul.nav a.nav-link,
+nav.toc>ul.nav span {
+    display: block;
+    font-size: .875rem;
+    line-height: 1.3;
+    margin-left: .5rem;
+    margin-right: 1rem;
+    word-wrap: break-word;
+    color: #222;
+}
+
+nav.toc>ul.nav a.nav-link {
+    color: #222;
+}
+
+nav.toc>ul.nav a.nav-link:hover {
+    color: #0078d7;
+}
+
+nav.toc>ul.nav a.nav-link.active {
+    background-color: #0050c5;
+    color: #FFF;
+}
+
+main th,
+pre {
+    text-align: left;
+}
+
+main table caption,
+main td,
+main th {
+    border-style: solid;
+    border-color: #e3e3e3;
+}
+
+main th {
+    font-family: segoe-ui_semibold, "Segoe UI Semibold", "Segoe WP", "Helvetica Neue", Helvetica, sans-serif;
+}
+
+main td,
+main th {
+    word-wrap: break-word;
+}
+
+main table {
+    border-collapse: collapse;
+    border-spacing: 0;
+    table-layout: auto;
+    width: 100%;
+    font-size: 0.875rem;
+}
+
+main table caption {
+    font-size: .8em;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 1.2em;
+    border-width: 0 0 1px;
+    text-align: right;
+}
+
+main td,
+main th {
+    display: table-cell;
+    padding: 12px 16px;
+    line-height: 1.5;
+    vertical-align: top;
+    border-width: 1px 0 0;
+}
+
+main th {
+    font-size: .875rem;
+    font-weight: 400;
+    vertical-align: bottom;
+    border-width: 0 0 1px;
+}
+
+main table>caption+thead>tr:first-child>td,
+main table>colgroup+thead>tr:first-child>td,
+main table>thead:first-child>tr:first-child>td {
+    border-top: 0;
+}
+
+main .table-striped>tbody>tr:nth-of-type(odd) {
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+main.extra-padding {
+    padding-bottom: 200px;
+}
