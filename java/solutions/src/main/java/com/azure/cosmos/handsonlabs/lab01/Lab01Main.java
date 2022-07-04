@@ -50,7 +50,7 @@ public class Lab01Main {
             indexingPolicy.setIncludedPaths(includedPaths); 
 
             CosmosContainerProperties containerProperties = 
-                new CosmosContainerProperties("CustomCollection", "/type");
+                new CosmosContainerProperties("CustomContainer", "/type");
             containerProperties.setIndexingPolicy(indexingPolicy);
             return targetDatabase.createContainerIfNotExists(containerProperties, ThroughputProperties.createManualThroughput(400));
         }).flatMap(containerResponse -> {
