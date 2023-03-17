@@ -1,5 +1,7 @@
 # Azure Cosmos DB Workshop
 
+Visit Home Page at https://azurecosmosdb.github.io/labs/
+
 ## Two Day Suggested Schedule
 
 - [Sample Schedule](./decks/CosmosDBWorkshopSchedule2019.docx)
