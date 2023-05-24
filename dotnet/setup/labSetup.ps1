@@ -306,23 +306,7 @@ function Add-EventHub($resourceGroupName, $location, $eventHubNS, $eventHubName,
 function Add-StreamProcessor($resourceGroupName, $location, $eventHubNS, $jobName) {
     # NOTE - Creating a Power BI Output is not supported via scripting
 
-    $jobDefinition = @"
-    {
-        "location": "$location",
-        "properties": {
-            "sku":{
-                "name": "standard"
-            },
-            "eventsOutOfOrderPolicy": "adjust",
-            "eventsOutOfOrderMaxDelayInSeconds": 10,
-            "compatibilityLevel": 1.1
-        }
-    }
-"@  
-
-    $jobDefinition | Out-File JobDefinition.json
-
-    New-AzStreamAnalyticsJob -ResourceGroupName $resourceGroupName -File "JobDefinition.json" -Name $jobName
+    New-AzStreamAnalyticsJob -ResourceGroupName $resourceGroupName -Name $jobName -Location $location -SkuName Standard -EventsOutOfOrderPolicy adjust -EventsOutOfOrderMaxDelayInSecond 10 -CompatibilityLevel 1.1
 
     $inputDefintion = @"
     {
@@ -351,35 +335,22 @@ function Add-StreamProcessor($resourceGroupName, $location, $eventHubNS, $jobNam
 
     $inputDefintion | Out-File InputDefinition.json
 
-    New-AzStreamAnalyticsInput -ResourceGroupName $resourceGroupName -JobName $jobName -File "InputDefinition.json"  
+    New-AzStreamAnalyticsInput -ResourceGroupName $resourceGroupName -JobName $jobName -File "InputDefinition.json"  -Name "cartInput"
 
-    $transformationDefintiion = @"
-    {
-        "properties": {
-            "streamingUnits": 1,
-            "query": "/*TOP 5*/\r\n WITH Counter AS\r\n (\r\n SELECT Item, Price, Action, COUNT(*) AS
-                    countEvents\r\n FROM cartinput\r\n WHERE Action = 'Purchased'\r\n GROUP BY Item, Price, Action,
-                    TumblingWindow(second,300)\r\n ), \r\n top5 AS\r\n (\r\n SELECT DISTINCT\r\n CollectTop(5)  OVER
-                    (ORDER BY countEvents) AS topEvent\r\n FROM Counter\r\n GROUP BY TumblingWindow(second,300)\r\n ),
-                    \r\n arrayselect AS \r\n (\r\n SELECT arrayElement.ArrayValue\r\n FROM top5\r\n CROSS APPLY
-                    GetArrayElements(top5.topevent) AS arrayElement\r\n ) \r\n SELECT arrayvalue.value.item,
-                    arrayvalue.value.price, arrayvalue.value.countEvents\r\n INTO top5Output\r\n FROM
-                    arrayselect\r\n\r\n /*REVENUE*/\r\n SELECT System.TimeStamp AS Time, SUM(Price)\r\n INTO
-                    incomingRevenueOutput\r\n FROM cartinput\r\n WHERE Action = 'Purchased'\r\n GROUP BY
-                    TumblingWindow(minute, 5)\r\n\r\n /*UNIQUE VISITORS*/\r\n SELECT System.TimeStamp AS Time,
-                    COUNT(DISTINCT CartID) as uniqueVisitors\r\n INTO uniqueVisitorCountOutput\r\n FROM cartinput\r\n
-                    GROUP BY TumblingWindow(second, 30)\r\n\r\n  /*AVERAGE PRICE*/      \r\n SELECT System.TimeStamp
-                    AS Time, Action, AVG(Price)  \r\n INTO averagePriceOutput  \r\n FROM cartinput  \r\n GROUP BY
-                    Action, TumblingWindow(second,30) "             
-        },                                    
-        "name": "Transformation",
-        "type": "Microsoft.StreamAnalytics/streamingjobs/transformations"        
-    }
-"@
-
-    $transformationDefintiion | Out-File TransformationDefinition.json
-
-    New-AzStreamAnalyticsTransformation -ResourceGroupName $resourceGroupName -JobName $jobName -File "TransformationDefinition.json"    
+    New-AzStreamAnalyticsTransformation -ResourceGroupName $resourceGroupName -JobName $jobName -Name "Transformation" -StreamingUnit 1 -Query "/*TOP 5*/\r\n WITH Counter AS\r\n (\r\n SELECT Item, Price, Action, COUNT(*) AS
+    countEvents\r\n FROM cartinput\r\n WHERE Action = 'Purchased'\r\n GROUP BY Item, Price, Action,
+    TumblingWindow(second,300)\r\n ), \r\n top5 AS\r\n (\r\n SELECT DISTINCT\r\n CollectTop(5)  OVER
+    (ORDER BY countEvents) AS topEvent\r\n FROM Counter\r\n GROUP BY TumblingWindow(second,300)\r\n ),
+    \r\n arrayselect AS \r\n (\r\n SELECT arrayElement.ArrayValue\r\n FROM top5\r\n CROSS APPLY
+    GetArrayElements(top5.topevent) AS arrayElement\r\n ) \r\n SELECT arrayvalue.value.item,
+    arrayvalue.value.price, arrayvalue.value.countEvents\r\n INTO top5Output\r\n FROM
+    arrayselect\r\n\r\n /*REVENUE*/\r\n SELECT System.TimeStamp AS Time, SUM(Price)\r\n INTO
+    incomingRevenueOutput\r\n FROM cartinput\r\n WHERE Action = 'Purchased'\r\n GROUP BY
+    TumblingWindow(minute, 5)\r\n\r\n /*UNIQUE VISITORS*/\r\n SELECT System.TimeStamp AS Time,
+    COUNT(DISTINCT CartID) as uniqueVisitors\r\n INTO uniqueVisitorCountOutput\r\n FROM cartinput\r\n
+    GROUP BY TumblingWindow(second, 30)\r\n\r\n  /*AVERAGE PRICE*/      \r\n SELECT System.TimeStamp
+    AS Time, Action, AVG(Price)  \r\n INTO averagePriceOutput  \r\n FROM cartinput  \r\n GROUP BY
+    Action, TumblingWindow(second,30) "
 }
 
 ##################
